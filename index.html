@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Bootstrap Example</title>
+    <h1 align="center">SELECT TO SCAN</h1>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<style>
+    body{
+        background-image: url("bground.jpg");
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+
+    }
+    p.padding {
+        padding-top: 25px;
+        padding-right: 50px;
+        padding-bottom: 25px;
+        padding-left: 50px;
+    }
+
+    input.cen
+    {
+        text-align:center;
+    }
+
+</style>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        .host{
+
+            display:none;
+        }
+        .port{
+
+            display:none;
+        }
+        .hostrange{
+
+            display:none;
+        }
+
+    </style>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        .host{
+
+            display:none;
+        }
+        .port{
+
+            display:none;
+        }
+        .hostrange{
+
+            display:none;
+        }
+
+    </style>
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script>
+        function myFunct(ip) {
+
+            var range = document.forms["form1"]["text2"].value;
+            //alert(range);
+            var ip = ip.split(".");
+            // alert(ip);
+
+            if (ip.length != 4) {
+                alert("You have entered an invalid IP address!");
+                return false;
+            }
+
+            //Check Numbers
+            for (var c = 0; c < 4; c++) {
+                //Perform Test
+                if (ip[c] <= -1 || ip[c] > 255 ||
+                        isNaN(parseFloat(ip[c])) || !isFinite(ip[c]) ||
+                        ip[c].indexOf(" ") !== -1) {
+                    alert("You have entered an invalid IP address!");
+                    return false;
+                }
+            }
+            if(document.getElementById('hostr').checked) {
+                if ((range > 1024) || (range < 1)) {
+
+                    alert("Enter valid range between 1-1024");
+                    return false;
+                }
+            }
+            //alert("true");
+            return true;
+        }
+
+        function myFunction(ip) {
+
+            var range=document.forms["form2"]["text2"].value;
+            //alert(range);
+            var ip = ip.split(".");
+           // alert(ip);
+
+            if (ip.length != 4) {
+                alert("You have entered an invalid IP address!");
+                return false;
+            }
+
+            //Check Numbers
+            for (var c = 0; c < 4; c++) {
+                //Perform Test
+                if ( ip[c] <= -1 || ip[c] > 255 ||
+                        isNaN(parseFloat(ip[c])) ||
+                        !isFinite(ip[c])  ||
+                        ip[c].indexOf(" ") !== -1 ) {
+                    alert("You have entered an invalid IP address!");
+                    return false;
+                }
+            }
+            if((range>1024)||(range<1))
+            {
+
+                alert("Please enter range between 1-1024");
+                return false;
+            }
+            //alert("true");
+           return true;
+
+        }
+       
+
+        $(document).ready(function(){
+
+            $("#hostdiv").click(function(){
+                $(".host").show();
+                $(".port").hide();
+
+
+            });
+
+            $("#portdiv").click(function(){
+                $(".port").show();
+                $(".host").hide();
+            });
+
+           /* $("#hostr").click(function(){
+                $(this).child.show();
+            });*/
+
+            $("#hostr").click(function(){
+
+                $(".hostrange").show();
+
+            });
+
+
+        });
+
+
+
+    </script>
+</head>
+
+
+<body>
+
+<br>
+<br>
+<table>
+    <col width="300">
+    <col width="500">
+    <col width="500">
+    <tr>
+        <td></td>
+        <td>
+<button style="width: 40%" id="hostdiv">Host Scan</button>
+</td>
+    <td>
+<button style="width: 40%" id="portdiv">Port Scan</button>
+    </td>
+</tr>
+</table>
+<br>
+<br>
+
+
+<div class="host">
+    <hr>
+    <h3 align="center">Enter the details:</h3><br>
+    <form name="form1" action="/send" onsubmit="return myFunct(document.form1.text1.value)" method="post">
+    <table>
+    <col width="550">
+
+   <tr>
+
+       <td></td>
+<td>
+
+        <label for="ipsingle">IP Address:</label>
+
+        <input type="text" name="text1" id="ipsingle">
+</td>
+       </tr>
+
+</table>
+<br><br>
+        <table>
+            <col width="600">
+
+            <tr>
+                <td></td><td>
+                <input type="radio" id="hostr">Range<br>
+                <!--<style="width: 200%" id="hostr">Range of IP</>-->
+            </td></tr>
+
+
+        </table>
+        <br><br>
+        <div class="hostrange">
+            <table>
+                <col width="550">
+
+                <tr>
+
+                    <td></td>
+                    <td>
+
+                        <label for="iprange">Enter Range:</label>
+
+                        <input type="text" name="text2" id="iprange">
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+        <br><br>
+        <table>
+            <col width="620">
+            <col width="620">
+            <tr>
+                <td></td>
+                <td>
+                    <INPUT TYPE=CHECKBOX NAME="random"> Random
+
+                <td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+
+    <input type="submit" name="submit" value="Submit" />
+            </td></tr></table>
+
+    </form>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="port">
+    <hr>
+    <h3 align="center">Enter the details:</h3><br>
+
+    <form name="form2" action="/send" onsubmit="return myFunction(document.form2.text1.value)" method="post" >
+        <table>
+            <col width="300">
+            <col width="400">
+
+            <col width="50">
+            <col width="400">
+
+            <tr>
+                <td></td>
+                <td>
+                    <label for="single">IP Address:</label>
+
+                    <input type="text" name="text1" id="single">
+                </td>
+                <td></td>
+                <td>
+                    <label for="range">Range of Ports:</label>
+
+                    <input type="text" name="text2" id="range">
+                </td> </tr>
+
+        </table> <br><br>
+<table>
+    <col width="600">
+    <col width="600">
+    <tr>
+        <td></td>
+        <td>
+        <INPUT TYPE=CHECKBOX NAME="random"> Random
+
+        <td>
+        </tr>
+    <tr></tr>
+    <tr>
+        <td></td>
+        <td>
+
+            <input class="cen" type="submit" name="submit" value="Submit"/>
+</td>
+</tr>
+</table>
+    </form>
+
+</div>
+
+</body>
+</html>
