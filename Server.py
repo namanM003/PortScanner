@@ -188,13 +188,36 @@ class myHandler(BaseHTTPRequestHandler):
         #Handler for the POST requests	
 	# this line will be for host scan 
         def do_POST(self):
-                if self.path=="/send":
+                if self.path=="/port":
                         form = cgi.FieldStorage(
                                 fp=self.rfile,
                                 headers=self.headers,
                                 environ={'REQUEST_METHOD':'POST',
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
+			type_scan = 3
+			internet_protocol = form["IP"].value
+			start_port = form["start"].value
+			end_port = form["end"].value
+			request = Request(type_scan,internet_protocol,0,start_port,end_port)
+			Producer(request)
+			return
+		if self.path == "/host":
+			form = cgi.FieldStorage(
+				fp = self.rfile,
+				headers = self.headers,
+				environ={'REQUEST_METHOD':'POST',
+				 'CONTENT_TYPE':self.headers['Content-Type'],
+			})
+			type_scan = 1
+			internet_protocol = form["IP"].value
+			start_port = 0
+			end_port = form["end"].value
+			request = Request(type_scan, internet_protocol,0,start_port,end_port)
+			return
+		# Complete this method for type 2 which is IP Subnet type
+		#if self.path == "/
+	 			
 		# Here we will write for another function for port scan instead of host scan
 		#if self.path=="/portscan"  Define complete method
                         #print "Your name is: %s" % form["IP"].value
@@ -211,12 +234,12 @@ class myHandler(BaseHTTPRequestHandler):
                         #cursor.execute("SELECT * FROM IPINFO")
                         #data = cursor.fetchall()
                         #print " Data " + str(data)
-                        print "Before Request"
+                        #print "Before Request"
                         #from Server import Producer
-                        request = Request(1,"120.120.120.120",200,10,20)
-                        Producer(request)
-                        print "After Producer"
-                        return
+                        #request = Request(1,"120.120.120.120",200,10,20)
+                        #Producer(request)
+                        #print "After Producer"
+                        #return
 
 
 try:
