@@ -23,8 +23,9 @@ def client_listen():
             print "here2"
             #print data
             request = pickle.loads(data)
-            print >>sys.stderr, 'received "%s"' % request.ip_addr
-                    
+            print >>sys.stderr, 'received "%s"' % request
+            print str(request.port_start) + ":" + str(request.port_end)  
+                              
         finally:
             # Clean up the connection
             connection.close()
@@ -87,4 +88,3 @@ except:
 
 while 1:
    pass
-    

@@ -191,7 +191,7 @@
 <div class="host">
     <hr>
     <h3 align="center">Enter the details:</h3><br>
-    <form name="form1" action="/send" onsubmit="return myFunct(document.form1.text1.value)" method="post">
+    <form name="form1" action="/hosts" onsubmit="return myFunct(document.form1.IP.value)" method="post">
     <table>
     <col width="550">
 
@@ -200,9 +200,9 @@
        <td></td>
 <td>
 
-        <label for="ipsingle">IP Address:</label>
+        <label for="IP">IP Address:</label>
 
-        <input type="text" name="text1" id="ipsingle">
+        <input type="text" name="IP" id="IP">
 </td>
        </tr>
 
@@ -273,7 +273,7 @@
     <hr>
     <h3 align="center">Enter the details:</h3><br>
 
-    <form name="form2" action="/send" onsubmit="return myFunction(document.form2.text1.value)" method="post" >
+    <form name="form2" action="/ports" onsubmit="return myFunction(document.form2.text1.value)" method="post" >
         <table>
             <col width="300">
             <col width="400">
@@ -284,9 +284,9 @@
             <tr>
                 <td></td>
                 <td>
-                    <label for="single">IP Address:</label>
+                    <label for="IPp">IP Address:</label>
 
-                    <input type="text" name="text1" id="single">
+                    <input type="text" name="text1" id="IPp">
                 </td>
                 <td></td>
                 <td>

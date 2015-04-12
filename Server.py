@@ -107,6 +107,19 @@ def broadcast_message():
                 print >>sys.stderr, 'closing socket'
                 sock.close()
 
+def send_client(client_address, request, port_start, port_end):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(client_address)
+        client_request = Request(request.type,request.ip_addr,0,port_start,port_end)
+        data_string = pickle.dumps(client_request, -1)
+        print 'sending' + str(client_request.type) + ' to ' , client_address
+        sock.sendall(data_string)
+    finally:
+        print >>sys.stderr, 'closing socket'
+        sock.close()
+        
+
 class ConsumerThread(Thread):
     def run(self):
         global queue
@@ -117,10 +130,27 @@ class ConsumerThread(Thread):
                 condition.wait()
                 print "Producer added something to queue and notified the consumer"
             request = queue.pop(0)
-            print "Consumed", request.ip_addr 
+            print "Consumed", request.ip_addr , request.type
+            if request.type == 3:
+                no_of_ports = request.port_end - request.port_start + 1
+                length = len(clients)
+                ports = no_of_ports/length
+                start = request.port_start
+                end = start + ports - 1
+                i = 0
+                while True:
+                    if (end >=  request.port_end):
+                        if (start <= request.port_end):
+                            send_client(clients[i], request, start, request.port_end)
+                        break
+                    else :
+                        send_client(clients[i], request, start, end)
+                        i = (i + 1)%length
+                        start = end + 1
+                        end = start + ports - 1
             condition.release()
             time.sleep(1)
-    
+ 
 def Producer(request):
     global queue   
     condition.acquire()
@@ -188,7 +218,7 @@ class myHandler(BaseHTTPRequestHandler):
         #Handler for the POST requests	
 	# this line will be for host scan 
         def do_POST(self):
-                if self.path=="/port":
+                if self.path=="/ports":
                         form = cgi.FieldStorage(
                                 fp=self.rfile,
                                 headers=self.headers,
@@ -202,7 +232,7 @@ class myHandler(BaseHTTPRequestHandler):
 			request = Request(type_scan,internet_protocol,0,start_port,end_port)
 			Producer(request)
 			return
-		if self.path == "/host":
+		if self.path == "/hosts":
 			form = cgi.FieldStorage(
 				fp = self.rfile,
 				headers = self.headers,
@@ -212,8 +242,10 @@ class myHandler(BaseHTTPRequestHandler):
 			type_scan = 1
 			internet_protocol = form["IP"].value
 			start_port = 0
-			end_port = form["end"].value
+			end_port = 0 
 			request = Request(type_scan, internet_protocol,0,start_port,end_port)
+			Producer(request)
+			print "Perfectly Received Request"
 			return
 		# Complete this method for type 2 which is IP Subnet type
 		#if self.path == "/
