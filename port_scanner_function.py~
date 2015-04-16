@@ -18,7 +18,7 @@ def is_up(ip):
     else:
         return True
  
-def scan_port_ack(port_list,ip):
+def scan_port(port_list,ip):
     conf.verb = 0 # Disable verbose in sr(), sr1() methods
     start_time = time.time()
     closed = 0
