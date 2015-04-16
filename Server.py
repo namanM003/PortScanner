@@ -111,7 +111,7 @@ def send_client(client_address, request, port_start, port_end):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(client_address)
-        client_request = Request(request.type,request.ip_addr,0,port_start,port_end)
+        client_request = Request(request.type,request.ip_addr,0,port_start,port_end, request.random, request.date_today)
         data_string = pickle.dumps(client_request, -1)
         print 'sending' + str(client_request.type) + ' to ' , client_address
         sock.sendall(data_string)
@@ -226,14 +226,18 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
+			'''
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
 			random = form["random"].value
 			today = datetime.now()
 			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
+			'''
+			today = datetime.now()
+			request = Request(3,"54.12.123.61",0,1,100,False,today)
 			#today = datetime.now()
-			cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			#cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			Producer(request)
 			return
 		if self.path == "/hosts":

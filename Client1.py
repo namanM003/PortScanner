@@ -24,7 +24,7 @@ def client_listen():
             #print data
             request = pickle.loads(data)
             print >>sys.stderr, 'received "%s"' % request
-            print str(request.port_start) + ":" + str(request.port_end)  
+            print str(request.port_start) + ":" + str(request.port_end) + ":" + str(request.date_today) 
                               
         finally:
             # Clean up the connection
