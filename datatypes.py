@@ -10,14 +10,26 @@ class Request():
         self.date_today = date_today
 	#self.port_list = port_list
         
-        
-        
-class Response():
-    def __init__(self, type, date, ip_addr, ip_subnet, port_start, port_end, port_map):
+class ClientRequest():
+
+    def __init__(self, type, ip_addr, ip_subnet, port_start, port_end ,port_list, date_today):
         self.type = type
-        self.date = date
         self.ip_addr = ip_addr
         self.ip_subnet = ip_subnet
         self.port_start = port_start
         self.port_end = port_end
-        self.port_map = port_map
+        self.port_list = port_list
+        self.date_today = date_today
+        #self.port_list = port_list
+        
+        
+class Response():
+    def __init__(self, type, ip_addr, ip_subnet, port_start, port_end, port_list, date_today, result_dict):
+        self.type = type
+        self.date_today = date_today
+        self.ip_addr = ip_addr
+        self.ip_subnet = ip_subnet
+        self.port_start = port_start
+        self.port_end = port_end
+        self.port_list = port_list
+	self.result_dict = result_dict

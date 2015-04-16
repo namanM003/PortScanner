@@ -6,7 +6,7 @@ from threading import Thread, Lock
 from threading import Condition
 import random
 import cPickle as pickle
-from datatypes import Request
+from datatypes import *
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from os import curdir, sep
 import cgi
@@ -77,8 +77,9 @@ def client_listen():
             print >>sys.stderr, 'connection from', client_address
     
             # Receive the data in small chunks and retransmit it
-            data = connection.recv(16)
-            print >>sys.stderr, 'received "%s"' % data
+            data = connection.recv(11000)
+	    response = pickle.loads(data)
+	    print >>sys.stderr, 'received "%s"' % response.result_dict
                 
         finally:
             # Clean up the connection
@@ -111,7 +112,10 @@ def send_client(client_address, request, port_start, port_end):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(client_address)
-        client_request = Request(request.type,request.ip_addr,0,port_start,port_end, request.random, request.date_today)
+	port_list = []
+	for i in range(port_start,port_end+1):
+		port_list.append(i)
+        client_request = ClientRequest(request.type,request.ip_addr,0,port_start,port_end, port_list, request.date_today)
         data_string = pickle.dumps(client_request, -1)
         print 'sending' + str(client_request.type) + ' to ' , client_address
         sock.sendall(data_string)
@@ -235,7 +239,7 @@ class myHandler(BaseHTTPRequestHandler):
 			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
 			'''
 			today = datetime.now()
-			request = Request(3,"54.12.123.61",0,1,100,False,today)
+			request = Request(3,"216.178.46.224",0,79,84,False,today)
 			#today = datetime.now()
 			#cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			Producer(request)
