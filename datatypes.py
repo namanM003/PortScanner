@@ -6,7 +6,7 @@ class Request():
         self.port_start = port_start
         self.port_end = port_end
     
-    def __init__(self, type, ip_addr, ip_subnet, port_start, port_end, random, date):
+    def __init__(self, type, ip_addr, ip_subnet, port_start, port_end, random, date_today):
         self.type = type
         self.ip_addr = ip_addr
         self.ip_subnet = ip_subnet
@@ -23,21 +23,6 @@ class Request():
         self.port_end = port_end
         self.date = date
         
-    def __init__(self, type, ip_addr, ip_subnet, port_start, port_end, list):
-        self.type = type
-        self.ip_addr = ip_addr
-        self.ip_subnet = ip_subnet
-        self.port_start = port_start
-        self.port_end = port_end
-        self.list = list
-    
-    def __init__(self, type, date, ip_addr, ip_subnet, port_start, port_end):
-        self.type = type
-        self.date = date
-        self.ip_addr = ip_addr
-        self.ip_subnet = ip_subnet
-        self.port_start = port_start
-        self.port_end = port_end
         
 class Response():
     def __init__(self, type, date, ip_addr, ip_subnet, port_start, port_end, port_map):
