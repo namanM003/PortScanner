@@ -229,7 +229,11 @@ class myHandler(BaseHTTPRequestHandler):
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
-			request = Request(type_scan,internet_protocol,0,start_port,end_port)
+			random = form["random"].value
+			today = datetime.now()
+			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
+			#today = datetime.now()
+			cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			Producer(request)
 			return
 		if self.path == "/hosts":
