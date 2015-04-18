@@ -45,8 +45,8 @@ def scan_port_connect(port_list,ip):
               print "Host %s is down " % ip
          return open_close_dict
 
-resp = scan_port_connect([1,2,3],ip)
-print "Ports :  " + str(resp)
+#resp = scan_port_connect([1,2,3],ip)
+#print "Ports :  " + str(resp)
 
 	
 	
