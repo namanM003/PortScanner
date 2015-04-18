@@ -241,7 +241,8 @@ class myHandler(BaseHTTPRequestHandler):
 			today = datetime.now()
 			request = Request(3,"216.178.46.224",0,79,84,False,today)
 			#today = datetime.now()
-			#cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			cursor.execute('''(INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			db.commit()
 			Producer(request)
 			return
 		if self.path == "/hosts":
@@ -251,14 +252,31 @@ class myHandler(BaseHTTPRequestHandler):
 				environ={'REQUEST_METHOD':'POST',
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
-			type_scan = 1
-			internet_protocol = form["IP"].value
-			start_port = 0
-			end_port = 0 
-			request = Request(type_scan, internet_protocol,0,start_port,end_port)
-			Producer(request)
-			print "Perfectly Received Request"
-			return
+			today = datetime.now()
+			if form["Multi-Host"].value = False:   #IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
+				type_scan = 1
+				internet_protocol = form["IP"].value
+				start_port = 0
+				end_port = 0 
+				request = Request(type_scan, internet_protocol,0,start_port,end_port)
+				random = form["random"].value
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				db.commit()
+				Producer(request)
+				print "Perfectly Received Request"
+				return
+			if form["Multi-Host"].value = True:
+				type_scan = 2
+				internet_protocol = form["IP"].value
+				start_port = 0
+				end_port = 0
+				random = form["random"].value	#We have still not sending this field value as a parameter in request object
+				request = Request(type_scan, internet_protocol, 0, start_port, end_port)
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				db.commit()
+				Producer(request)
+				print "Perfectly Received Request"
+				return
 		# Complete this method for type 2 which is IP Subnet type
 		#if self.path == "/
 	 			
