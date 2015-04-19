@@ -23,8 +23,10 @@ cursor = db.cursor()
 
 clients = []
 queue = []
+response_queue = []
 
 condition = Condition()
+condition_response = Condition()
 
 def add_client():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,6 +82,7 @@ def client_listen():
             data = connection.recv(11000)
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
+	    ProducerResponse(response);
                 
         finally:
             # Clean up the connection
@@ -165,7 +168,37 @@ def Producer(request):
         print "Notifying"
         condition.notify()
     condition.release()
+
+class ConsumerResponseThread(Thread):
+    def run(self):
+        global response_queue
+        while True:
+            condition_response.acquire()
+            if not response_queue:
+                print "Nothing in queue, consumer is waiting"
+                condition_response.wait()
+                print "Producer added something to queue and notified the consumer"
+            response = response_queue.pop(0)
+            print "Consumed", response.ip_addr , response.type
+            if response.type == 1:
+                
+            if response.type == 3:
+                for k,v in response.result_dict.items():
+                cursor.execute('''(INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v)
+            db.commit()
+	    condition_response.release()
+            time.sleep(1)
     
+def ProducerResponse(response):
+    global response_queue   
+    condition_response.acquire()
+    length = len(response_queue)
+    response_queue.append(response)
+    print "Produced", response 
+    if length == 0:
+        print "Notifying"
+        condition_response.notify()
+    condition_response.release()    
 # Listen for incoming connections
 #try:
 #    thread.start_new_thread(add_client, () )
