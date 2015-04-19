@@ -230,16 +230,14 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
-			'''
+			
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
 			random = form["random"].value
 			today = datetime.now()
 			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
-			'''
-			today = datetime.now()
-			request = Request(3,"216.178.46.224",0,79,84,False,today)
+			#request = Request(3,"216.178.46.224",0,79,84,False,today)
 			#today = datetime.now()
 			cursor.execute('''(INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			db.commit()
@@ -253,7 +251,8 @@ class myHandler(BaseHTTPRequestHandler):
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
 			today = datetime.now()
-			if form["Multi-Host"].value = False:   #IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
+			if form["Multi-Host"].value == False:
+#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
 				type_scan = 1
 				internet_protocol = form["IP"].value
 				start_port = 0
@@ -265,7 +264,7 @@ class myHandler(BaseHTTPRequestHandler):
 				Producer(request)
 				print "Perfectly Received Request"
 				return
-			if form["Multi-Host"].value = True:
+			if form["Multi-Host"].value == True:
 				type_scan = 2
 				internet_protocol = form["IP"].value
 				start_port = 0
