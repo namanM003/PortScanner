@@ -10,6 +10,7 @@ from port_scanner_connect_call import scan_port_connect
 
 class ConsumerThread(Thread):
     def run(self):
+        dict_reponse = dict()
         global queue
         while True:
             condition.acquire()
@@ -22,22 +23,30 @@ class ConsumerThread(Thread):
             condition.release()
             print >>sys.stderr, 'received "%s"' % request.ip_addr
             if  request.type == 1:                                   
-                print "in request type 1" 
+                print " In request type 1"
+                print " For scanning IP " + str(request.ip_addr)
+                if(True == is_up(request.ip_addr)):
+                   dict_reponse[request.ip_addr] = True
+                else:
+                  dict_reponse[request.ip_addr]  = False
             elif request.type == 2:
-                 is_up(request.ip_addr)
+                print "In request type 2 "
+
             elif request.type == 3:                                          ### For port scanning 
+                 print " In request type 3 "
                  if request.port_scanning_mode == 1:
                     dict_response=scan_port_ack(request.port_list,request.ip_addr)  ### Add modes
                  elif request.port_scanning_mode == 2:
                     dict_response=scan_port_connect(request.port_list,request.ip_addr)
                  elif request.port_scanning_mode == 3:
-                    dict_response=scan_port_connect(request.port_list,request.ip_addr)    ##change this to Fin
+                    dict_response=scan_port_fin(request.port_list,request.ip_addr)    ##change this to Fin
                  else :
                      print "Scanning mode invalid"
                  
             else:
                  print "GOT WRONG PACKET"                 
-                    
+        resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response)
+        server_send(resp)            
             
 
 
@@ -91,8 +100,7 @@ def client_listen():                                         ### As well as prod
         finally:
             # Clean up the connection
             connection.close()
-        resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response)
-        server_send(resp) 
+        
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
