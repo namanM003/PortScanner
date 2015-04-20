@@ -30,10 +30,10 @@ def scan_port_connect(port_list,ip):
 
 			if result == 0:
 			    print "Port " + str(port) +" is Open"
-		            open_close_dict[port] = "yes"
+		            open_close_dict[port] = True
 			else :
 			    print "Port " + str(port) +" is Closed"
-		            open_close_dict[port] = "no"
+		            open_close_dict[port] = False
 		 	sock.close()
             except:
 	          print "Error"
