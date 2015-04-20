@@ -336,8 +336,28 @@ class myHandler(BaseHTTPRequestHandler):
 							'ALIVE':row.ALIVE}
 						results_host.append(result_host)
  
-			if form['Result'].value == "PortScanning":
-				if form
+			if form["Result"].value == "PortScanning":
+				if form["IP"] == "none"
+					con =cursor.execute("SELECT * FROM PORTDATA WHERE TIME > form["DATE"].value AND TIME < form["DATE"].value+1"
+					rows = con.fetchall()
+					for row in rows:
+						result_port = {
+							'IP': row.IP,
+							'PORT': row.PORT,
+							'Open': row.ALIVE}
+						results_port.append(result_port)
+				else:
+					#con = cursor.execute("SELECT ALIVE FROM IPINFO WHERE IP = form["IP"].value AND TIME > form["DATE"].value AND TIME < form["DATE"].value+1")
+					#validator = con.fetchall()
+					
+					con = cursor.execute("SELECT * FROM PORTDATA WHERE IP = form["IP"].value AND TIME > form["DATE"].value AND TIME < form["DATE"].value+1")
+					rows = con.fetchall()
+					for row in rows:
+						result_host = {
+							'IP' : row.IP,
+							'PORT': row.PORT,
+							'OPEN':row.ALIVE}
+						results_port.append(result_port)
 		'''
 		# Complete this method for type 2 which is IP Subnet type
 		#if self.path == "/
