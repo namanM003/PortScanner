@@ -23,8 +23,10 @@ cursor = db.cursor()
 
 clients = []
 queue = []
+response_queue = []
 
 condition = Condition()
+condition_response = Condition()
 
 def add_client():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,6 +82,7 @@ def client_listen():
             data = connection.recv(11000)
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
+	    ProducerResponse(response);
                 
         finally:
             # Clean up the connection
@@ -165,7 +168,37 @@ def Producer(request):
         print "Notifying"
         condition.notify()
     condition.release()
+
+class ConsumerResponseThread(Thread):
+    def run(self):
+        global response_queue
+        while True:
+            condition_response.acquire()
+            if not response_queue:
+                print "Nothing in queue, consumer is waiting"
+                condition_response.wait()
+                print "Producer added something to queue and notified the consumer"
+            response = response_queue.pop(0)
+            print "Consumed", response.ip_addr , response.type
+            if response.type == 1:
+                
+            if response.type == 3:
+                for k,v in response.result_dict.items():
+                cursor.execute('''(INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v)
+            db.commit()
+	    condition_response.release()
+            time.sleep(1)
     
+def ProducerResponse(response):
+    global response_queue   
+    condition_response.acquire()
+    length = len(response_queue)
+    response_queue.append(response)
+    print "Produced", response 
+    if length == 0:
+        print "Notifying"
+        condition_response.notify()
+    condition_response.release()    
 # Listen for incoming connections
 #try:
 #    thread.start_new_thread(add_client, () )
@@ -230,18 +263,17 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
-			'''
+			
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
 			random = form["random"].value
 			today = datetime.now()
 			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
-			'''
-			today = datetime.now()
-			request = Request(3,"216.178.46.224",0,79,84,False,today)
+			#request = Request(3,"216.178.46.224",0,79,84,False,today)
 			#today = datetime.now()
-			#cursor.execute('''(INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			cursor.execute('''(INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			db.commit()
 			Producer(request)
 			return
 		if self.path == "/hosts":
@@ -251,14 +283,32 @@ class myHandler(BaseHTTPRequestHandler):
 				environ={'REQUEST_METHOD':'POST',
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
-			type_scan = 1
-			internet_protocol = form["IP"].value
-			start_port = 0
-			end_port = 0 
-			request = Request(type_scan, internet_protocol,0,start_port,end_port)
-			Producer(request)
-			print "Perfectly Received Request"
-			return
+			today = datetime.now()
+			if form["Multi-Host"].value == False:
+#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
+				type_scan = 1
+				internet_protocol = form["IP"].value
+				start_port = 0
+				end_port = 0 
+				request = Request(type_scan, internet_protocol,0,start_port,end_port)
+				random = form["random"].value
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				db.commit()
+				Producer(request)
+				print "Perfectly Received Request"
+				return
+			if form["Multi-Host"].value == True:
+				type_scan = 2
+				internet_protocol = form["IP"].value
+				start_port = 0
+				end_port = 0
+				random = form["random"].value	#We have still not sending this field value as a parameter in request object
+				request = Request(type_scan, internet_protocol, 0, start_port, end_port)
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				db.commit()
+				Producer(request)
+				print "Perfectly Received Request"
+				return
 		# Complete this method for type 2 which is IP Subnet type
 		#if self.path == "/
 	 			

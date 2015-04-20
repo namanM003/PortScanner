@@ -67,13 +67,13 @@
     <script>
         function myFunct(ip) {
 
-            var range = document.forms["form1"]["text2"].value;
+           // var range = document.forms["form1"]["text2"].value;
             //alert(range);
             var ip = ip.split(".");
             // alert(ip);
 
             if (ip.length != 4) {
-                alert("You have entered an invalid IP address!");
+                //alert("You have entered an invalid IP address!");
                 return false;
             }
 
@@ -83,20 +83,75 @@
                 if (ip[c] <= -1 || ip[c] > 255 ||
                         isNaN(parseFloat(ip[c])) || !isFinite(ip[c]) ||
                         ip[c].indexOf(" ") !== -1) {
-                    alert("You have entered an invalid IP address!");
+                    //alert("You have entered an invalid IP address!");
                     return false;
                 }
             }
-            if(document.getElementById('hostr').checked) {
+           /* if(document.getElementById('hostr').checked) {
                 if ((range > 1024) || (range < 1)) {
 
                     alert("Enter valid range between 1-1024");
                     return false;
                 }
-            }
+            }*/
             //alert("true");
             return true;
         }
+	function myFunctSub(ip) {
+
+           // var range = document.forms["form1"]["text2"].value;
+            //alert(range);
+            var ip = ip.split(".");
+		var sub=ip[3].split("/");
+            // alert(ip);
+
+            if (ip.length != 4) {
+               // alert("You have entered an invalid IP address!");
+                return false;
+            }
+
+            //Check Numbers
+            for (var c = 0; c < 3; c++) {
+                //Perform Test
+                if (ip[c] <= -1 || ip[c] > 255 ||
+                        isNaN(parseFloat(ip[c])) || !isFinite(ip[c]) ||
+                        ip[c].indexOf(" ") !== -1) {
+                    //alert("You have entered an invalid IP address!");
+                    return false;
+                }
+            }
+		
+		if (sub[0] <= -1 || sub[0] > 255 ||
+                        isNaN(parseFloat(ip[0])) || !isFinite(ip[0]) ||
+                        ip[c].indexOf(" ") !== -1) {
+                    //alert("You have entered an invalid IP address!");
+                    return false;}
+		if(sub[1]<0||sub[1]>32)
+		{
+                    //alert("You have entered an invalid IP address!");
+                    return false;}
+           
+            return true;
+        }
+	function hostFunc(ip)
+	{
+		//alert("here");
+		var f1=myFunct(ip);
+		var f2=myFunctSub(ip);
+		
+		alert("here");
+		if(f2)
+		{
+			document.forms["form1"]["subval"].value=true;
+		}
+		alert(f1||f2);
+		/*if(f1||f2)
+			{}
+		else
+			alert("You have entered an invalid IP address!");*/
+		return (f1||f2);
+			
+	}
 
         function myFunction(ip) {
 
@@ -121,10 +176,10 @@
                     return false;
                 }
             }
-            if((range>1024)||(range<1))
+            if((start>end)||(start<1)||(end>65536))
             {
 
-                alert("Please enter range between 1-1024");
+                alert("Please enter range between 1-65536");
                 return false;
             }
             //alert("true");
@@ -191,7 +246,7 @@
 <div class="host">
     <hr>
     <h3 align="center">Enter the details:</h3><br>
-    <form name="form1" action="/hosts" onsubmit="return myFunct(document.form1.IP.value)" method="post">
+    <form name="form1" action="/hosts" onsubmit="return hostFunc(document.form1.IP.value)" method="post">
     <table>
     <col width="550">
 
@@ -208,19 +263,22 @@
 
 </table>
 <br><br>
-        <table>
+<input type=hidden id=Multi-Host value=false name=subval />
+        <!--<table>
             <col width="600">
 
             <tr>
                 <td></td><td>
-                <input type="radio" id="hostr">Range<br>
+		<a href="a.html">To Scan range of Ports</a>-->
+		<!--<button onclick="a.html">Range</button>-->
+                <!--<input type="radio" id="hostr">Range<br>-->
                 <!--<style="width: 200%" id="hostr">Range of IP</>-->
-            </td></tr>
+           <!-- </td></tr>
 
 
-        </table>
+        </table>-->
         <br><br>
-        <div class="hostrange">
+       <!-- <div class="hostrange">
             <table>
                 <col width="550">
 
@@ -237,7 +295,7 @@
 
             </table>
 
-        </div>
+        </div>-->
         <br><br>
         <table>
             <col width="620">
@@ -291,8 +349,8 @@
                 <td></td>
                 <td>
                     <label for="range">Range of Ports:</label>
-
-                    <input type="text" name="text2" id="range">
+			<input type="text" name="text2" id="start">
+                    <input type="text" name="text3" id="end">
                 </td> </tr>
 
         </table> <br><br>
