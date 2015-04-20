@@ -181,10 +181,10 @@ class ConsumerResponseThread(Thread):
             response = response_queue.pop(0)
             print "Consumed", response.ip_addr , response.type
             if response.type == 1:
-                
+            	print "COMPLETE THIS"    
             if response.type == 3:
                 for k,v in response.result_dict.items():
-                cursor.execute('''(INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v)
+                	cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v))
             db.commit()
 	    condition_response.release()
             time.sleep(1)
@@ -272,7 +272,7 @@ class myHandler(BaseHTTPRequestHandler):
 			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
 			#request = Request(3,"216.178.46.224",0,79,84,False,today)
 			#today = datetime.now()
-			cursor.execute('''(INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			db.commit()
 			Producer(request)
 			return
@@ -309,6 +309,36 @@ class myHandler(BaseHTTPRequestHandler):
 				Producer(request)
 				print "Perfectly Received Request"
 				return
+		'''
+		if self.path == "/results":
+			form = cgi.FieldStorage(
+				fp = self.rfile,
+				headers = self.headers,
+				environ={'REQUEST_METHOD':'POST',
+				 'CONTENT_TYPE':self.headers['Content-Type'],
+			})
+			if form['Result'].value == "HostScanning":
+				if form["IP"].value == "none"
+					
+					con=cursor.execute("SELECT * FROM IPINFO WHERE TIME > form["Date"].value AND TIME < form["Date"].value+1)
+					rows = con.fetchall()
+					for row in rows:
+						result_host = {
+							'IP': row.IP,
+							'ALIVE' : row.ALIVE}
+						results_host.append(result_host)
+				else:
+					con = cursor.execute("SELECT * FROM IPINFO WHERE IP = form["IP"].value AND TIME > form["Date"].value AND TIME < form["Date"].value+1")
+					rows = con.fetchall()
+					for row in rows:
+						result_host = {
+							'IP' : row.IP,
+							'ALIVE':row.ALIVE}
+						results_host.append(result_host)
+ 
+			if form['Result'].value == "PortScanning":
+				if form
+		'''
 		# Complete this method for type 2 which is IP Subnet type
 		#if self.path == "/
 	 			
