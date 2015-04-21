@@ -41,16 +41,16 @@ def scan_port_fin(ports,ip):
                 
                 openp.append(port)
                 print " Port is open " + str(port)
-                open_close_dict[port] = "yes"
+                open_close_dict[port] = True
             elif resp.haslayer(TCP):
                 if resp.getlayer(TCP).flags == 0x14:
                     print " Port is closed " + str(port) 
                     closed_list.append(port)
-                    open_close_dict[port] = "no"
+                    open_close_dict[port] = False
                 else:
                     print " Came here jhol " + str(port) + " " + str(resp.getlayer(TCP).flags) 
                     closed_list.append(port)
-                    open_close_dict[port] = "no"
+                    open_close_dict[port] = False
         duration = time.time()-start_time
     else:
         for port in ports:
