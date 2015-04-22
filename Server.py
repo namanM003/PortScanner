@@ -16,7 +16,7 @@ from datetime import datetime
 
 
 PORT_NUMBER = 8070
-db = sqlite3.connect('portdb')
+db = sqlite3.connect('portdb', check_same_thread=False)
 cursor = db.cursor()
 #This class will handles any incoming request from
 #the browser 
@@ -82,6 +82,7 @@ def client_listen():
             data = connection.recv(11000)
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
+            print " Got Response " + str(response.result_dict)
 	    ProducerResponse(response);
                 
         finally:
@@ -179,7 +180,7 @@ class ConsumerResponseThread(Thread):
                 condition_response.wait()
                 print "Producer added something to queue and notified the consumer"
             response = response_queue.pop(0)
-            print "Consumed", response.ip_addr , response.type, str(response.result_dict())
+            print "Consumed_Response Thred", response.ip_addr , response.type, str(response.result_dict)
             if response.type == 1:
                 print " In type 1 "
 		for k,v in response.result_dict.items():
@@ -201,7 +202,7 @@ def ProducerResponse(response):
     condition_response.acquire()
     length = len(response_queue)
     response_queue.append(response)
-    print "Produced", response 
+    print "Produced_response", response 
     if length == 0:
         print "Notifying"
         condition_response.notify()
@@ -270,17 +271,17 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
-			'''	
+				
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
-			random = form["random"].value
-			'''
+			#random1 = form["random"].value
+			
 			today = datetime.now()
-			#request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
-			request = Request(3,"216.178.46.224",0,79,84,False,today,1)
+			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),False,today,333)
+			#request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
-			#cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
 			db.commit()
 			Producer(request)
 			return
@@ -404,6 +405,7 @@ try:
  #   thread.start_new_thread(broadcast_message,( ))
     	thread.start_new_thread(client_listen,( ))
 	ConsumerThread().start()
+        ConsumerResponseThread().start()
 
         #Wait forever for incoming htto requests
         server.serve_forever()
