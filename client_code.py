@@ -7,6 +7,15 @@ from datatypes import Response
 from port_scanner_function import scan_port_ack
 from port_scanner_function import is_up
 from port_scanner_connect_call import scan_port_connect
+from threading import Thread, Lock
+from threading import Condition
+import time
+import random
+
+queue = []
+lock = Lock()
+
+condition = Condition()
 
 class ConsumerThread(Thread):
     def run(self):
@@ -35,18 +44,23 @@ class ConsumerThread(Thread):
             elif request.type == 3:                                          ### For port scanning 
                  print " In request type 3 "
                  if request.port_scanning_mode == 1:
+                    print "Requested SYN mode"
                     dict_response=scan_port_ack(request.port_list,request.ip_addr)  ### Add modes
+                    print "got response " + str(dict_response)
                  elif request.port_scanning_mode == 2:
+                    print "Requested Full connect "
                     dict_response=scan_port_connect(request.port_list,request.ip_addr)
                  elif request.port_scanning_mode == 3:
+                    print " Requested Fin mode "
                     dict_response=scan_port_fin(request.port_list,request.ip_addr)    ##change this to Fin
                  else :
                      print "Scanning mode invalid"
                  
             else:
                  print "GOT WRONG PACKET"                 
-        resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response)
-        server_send(resp)            
+            resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response)
+            print "Sending to the server"
+            server_send(resp)            
             
 
 
@@ -59,7 +73,7 @@ def server_send(response):
         
         sock.connect(server_address)  
         data_string = pickle.dumps(response, -1)
-     
+        print "Final send to the server "
         sock.sendall(data_string)
     finally:
             print >>sys.stderr, 'closing socket'

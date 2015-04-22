@@ -118,7 +118,7 @@ def send_client(client_address, request, port_start, port_end):
 	port_list = []
 	for i in range(port_start,port_end+1):
 		port_list.append(i)
-        client_request = ClientRequest(request.type,request.ip_addr,0,port_start,port_end, port_list, request.date_today)
+        client_request = ClientRequest(request.type,request.ip_addr,0,port_start,port_end, port_list, request.date_today,request.port_scanning_mode)
         data_string = pickle.dumps(client_request, -1)
         print 'sending' + str(client_request.type) + ' to ' , client_address
         sock.sendall(data_string)
@@ -179,10 +179,17 @@ class ConsumerResponseThread(Thread):
                 condition_response.wait()
                 print "Producer added something to queue and notified the consumer"
             response = response_queue.pop(0)
-            print "Consumed", response.ip_addr , response.type
+            print "Consumed", response.ip_addr , response.type, str(response.result_dict())
             if response.type == 1:
-            	print "COMPLETE THIS"    
-            if response.type == 3:
+                print " In type 1 "
+		for k,v in response.result_dict.items():
+			cursor.execute('''UPDATE IPINFO SET ALIVE = ? WHERE IP = ? AND TIME = ? ''',(v,response.ip_addr,response.date_today)) #We assume there will be only one result
+	    if response.type == 2:
+                print " In type 2 "
+		for k,v in response.result_dict.items():
+            		cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(k,2,v,response.date_today))
+	    if response.type == 3:
+                print " In type 3 "
                 for k,v in response.result_dict.items():
                 	cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v))
             db.commit()
@@ -263,16 +270,17 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
-			
+			'''	
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
 			random = form["random"].value
+			'''
 			today = datetime.now()
-			request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
-			#request = Request(3,"216.178.46.224",0,79,84,False,today)
+			#request = Request(type_scan,internet_protocol,0,start_port,end_port,random,today)
+			request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
-			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+			#cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
 			db.commit()
 			Producer(request)
 			return
