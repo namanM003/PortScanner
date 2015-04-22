@@ -18,6 +18,15 @@ lock = Lock()
 
 condition = Condition()
 
+def scan_ip(port_list):
+ response = dict()
+ for i in range(0,len(port_list)):
+      if(True == is_up(port_list)):
+          response[port_list[i]] = True
+      else:
+          response[port_list[i]]  = False
+ return response
+
 class ConsumerThread(Thread):
     def run(self):
         dict_response = dict()
@@ -41,6 +50,7 @@ class ConsumerThread(Thread):
                   dict_response[request.ip_addr]  = False
             elif request.type == 2:
                 print "In request type 2 "
+                dict_response = scan_ip(request.port_list)
 
             elif request.type == 3:                                          ### For port scanning 
                  print " In request type 3 "
