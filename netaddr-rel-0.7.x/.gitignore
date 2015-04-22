@@ -1,0 +1,11 @@
+*.py[co]
+*.bak
+netaddr/.coverage
+netaddr/tests/coverage/
+netaddr/tests/coverage_report.txt
+netaddr.egg-info/*
+*.DS_Store
+build/
+dist/
+docs/build/
+.idea/
