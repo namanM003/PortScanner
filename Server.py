@@ -4,6 +4,7 @@ import thread
 import time
 from threading import Thread, Lock
 from threading import Condition
+import logging
 import random
 import cPickle as pickle
 from datatypes import *
@@ -28,6 +29,13 @@ response_queue = []
 condition = Condition()
 condition_response = Condition()
 
+def InitializeLogger(Name): 
+    logger = logging.getLogger(Name) hdlr = logging.FileHandler(Name + '.log') 
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') 
+    hdlr.setFormatter(formatter) 
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.INFO)
+
 def add_client():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -42,13 +50,14 @@ def add_client():
         print >>sys.stderr, 'waiting for a connection'
         connection, client_address = sock.accept()
         clients.append(client_address)
+	logger.info("New Client added : " + str(client_address))
         
         try:
             print >>sys.stderr, 'connection from', client_address
     
             # Receive the data in small chunks and retransmit it
             while True:
-                data = connection.recv(16)
+                data = connection.recv(100)
                 print >>sys.stderr, 'received "%s"' % data
                 if data:
                     print >>sys.stderr, 'sending data back to the client'
@@ -74,6 +83,7 @@ def client_listen():
     while True:
         # Wait for a connection
         print >>sys.stderr, 'waiting for a connection'
+	logger.info("Waiting for response from clients")
         connection, client_address = sock1.accept()
         try:
             print >>sys.stderr, 'connection from', client_address
@@ -83,6 +93,7 @@ def client_listen():
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
             print " Got Response " + str(response.result_dict)
+	    logger.info("Got response " + str(response.ip_addr) + ":" + str(response.date_today))
 	    ProducerResponse(response);
                 
         finally:
@@ -122,6 +133,7 @@ def send_client(client_address, request, port_start, port_end):
         client_request = ClientRequest(request.type,request.ip_addr,0,port_start,port_end, port_list, request.date_today,request.port_scanning_mode)
         data_string = pickle.dumps(client_request, -1)
         print 'sending' + str(client_request.type) + ' to ' , client_address
+	logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
         sock.sendall(data_string)
     finally:
         print >>sys.stderr, 'closing socket'
@@ -135,10 +147,13 @@ class ConsumerThread(Thread):
             condition.acquire()
             if not queue:
                 print "Nothing in queue, consumer is waiting"
+		logger.info("Nothing in queue, consumer is waiting")
                 condition.wait()
                 print "Producer added something to queue and notified the consumer"
+		logger.info("Producer added something to queue and notifies the consumer")
             request = queue.pop(0)
             print "Consumed", request.ip_addr , request.type
+	    logger.info("Consumed :" + str(request.ip_addr) + ":" + str(request.date_today))
             if request.type == 3:
                 no_of_ports = request.port_end - request.port_start + 1
                 length = len(clients)
@@ -398,6 +413,7 @@ class myHandler(BaseHTTPRequestHandler):
 try:
         #Create a web server and define the handler to manage the
         #incoming request
+	InitializeLogger(str(os.getpid()))
 
         server = HTTPServer(('', PORT_NUMBER), myHandler)
         print 'Started httpserver on port ' , PORT_NUMBER

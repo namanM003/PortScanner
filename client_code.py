@@ -19,7 +19,7 @@ condition = Condition()
 
 class ConsumerThread(Thread):
     def run(self):
-        dict_reponse = dict()
+        dict_response = dict()
         global queue
         while True:
             condition.acquire()
@@ -35,9 +35,9 @@ class ConsumerThread(Thread):
                 print " In request type 1"
                 print " For scanning IP " + str(request.ip_addr)
                 if(True == is_up(request.ip_addr)):
-                   dict_reponse[request.ip_addr] = True
+                   dict_response[request.ip_addr] = True
                 else:
-                  dict_reponse[request.ip_addr]  = False
+                  dict_response[request.ip_addr]  = False
             elif request.type == 2:
                 print "In request type 2 "
 
