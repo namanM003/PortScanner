@@ -7,6 +7,7 @@ from datatypes import Response
 from port_scanner_function import scan_port_ack
 from port_scanner_function import is_up
 from port_scanner_connect_call import scan_port_connect
+from port_scanner_fin import scan_port_fin
 from threading import Thread, Lock
 from threading import Condition
 import time
