@@ -5,7 +5,7 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR) # Disable the annoyin
 from scapy.all import *
  
 #ip = "216.178.46.224"
-ip = "31.13.73.1"
+ip = "8.8.8.8"
 #ip ="10.255.42.171"
 #ip = "127.0.0.1"
 #ip = "123.125.115.164"
@@ -59,5 +59,5 @@ def scan_port_fin(ports,ip):
 
     return open_close_dict
 
-#dict_l = scan_port_fin([52977,5298,5299],ip)
-#print str(dict_l)
+dict_l = scan_port_fin([70,71,72,73,74,80],ip)
+print str(dict_l)
