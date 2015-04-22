@@ -65,10 +65,62 @@
 
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
-        function myFunct(ip) {
+        
+	function myFunctSub(ip) {
+
+           // var range = document.forms["form1"]["text2"].value;
+            
+            var ip = ip.split(".");
+		var sub=ip[3].split("/");
+             
+            if (ip.length != 4) {
+               // alert("You have entered an invalid IP address!");
+                return false;
+            }
+
+            //Check Numbers
+            for (var c = 0; c < 3; c++) {
+                //Perform Test
+                if (ip[c] <= -1 || ip[c] > 255 ||
+                        isNaN(parseFloat(ip[c])) || !isFinite(ip[c]) ||
+                        ip[c].indexOf(" ") !== -1) {
+                    //alert("You have entered an invalid IP address!");
+                    return false;
+                }
+            }
+		
+		if (sub[0] <= -1 || sub[0] > 255 ||
+                        isNaN(parseFloat(ip[0])) || !isFinite(ip[0]) ||
+                        ip[c].indexOf(" ") !== -1) {
+                    //alert("You have entered an invalid IP address!");
+                    return false;}
+		if(!sub)
+			return true;
+		if(sub[1]<0||sub[1]>32)
+		{
+                    //alert("You have entered an invalid IP address!");
+                    return false;}
+           
+            return true;
+        }
+
+
+	function myFunct(ip) {
 
            // var range = document.forms["form1"]["text2"].value;
             //alert(range);
+		if(ip.indexOf('/') === -1)
+		{
+ 			document.forms["form1"]["subval"].value=false; 
+		}
+		
+		else
+		{
+			document.forms["form1"]["subval"].value=false;
+			return myFunctSub(ip);
+		}
+
+
             var ip = ip.split(".");
             // alert(ip);
 
@@ -97,66 +149,14 @@
             //alert("true");
             return true;
         }
-	function myFunctSub(ip) {
-
-           // var range = document.forms["form1"]["text2"].value;
-            //alert(range);
-            var ip = ip.split(".");
-		var sub=ip[3].split("/");
-            // alert(ip);
-
-            if (ip.length != 4) {
-               // alert("You have entered an invalid IP address!");
-                return false;
-            }
-
-            //Check Numbers
-            for (var c = 0; c < 3; c++) {
-                //Perform Test
-                if (ip[c] <= -1 || ip[c] > 255 ||
-                        isNaN(parseFloat(ip[c])) || !isFinite(ip[c]) ||
-                        ip[c].indexOf(" ") !== -1) {
-                    //alert("You have entered an invalid IP address!");
-                    return false;
-                }
-            }
-		
-		if (sub[0] <= -1 || sub[0] > 255 ||
-                        isNaN(parseFloat(ip[0])) || !isFinite(ip[0]) ||
-                        ip[c].indexOf(" ") !== -1) {
-                    //alert("You have entered an invalid IP address!");
-                    return false;}
-		if(sub[1]<0||sub[1]>32)
-		{
-                    //alert("You have entered an invalid IP address!");
-                    return false;}
-           
-            return true;
-        }
-	function hostFunc(ip)
-	{
-		//alert("here");
-		var f1=myFunct(ip);
-		var f2=myFunctSub(ip);
-		
-		alert("here");
-		if(f2)
-		{
-			document.forms["form1"]["subval"].value=true;
-		}
-		alert(f1||f2);
-		/*if(f1||f2)
-			{}
-		else
-			alert("You have entered an invalid IP address!");*/
-		return (f1||f2);
-			
-	}
+	
 
         function myFunction(ip) {
 
-            var range=document.forms["form2"]["text2"].value;
+            //var range=document.forms["form2"]["text2"].value;
             //alert(range);
+		var start=document.forms["form2"]["start"].value;
+		var end=document.forms["form2"]["end"].value;
             var ip = ip.split(".");
            // alert(ip);
 
@@ -246,7 +246,7 @@
 <div class="host">
     <hr>
     <h3 align="center">Enter the details:</h3><br>
-    <form name="form1" action="/hosts" onsubmit="return hostFunc(document.form1.IP.value)" method="post">
+    <form name="form1" action="/hosts" onsubmit="return myFunct(document.form1.IP.value)" method="post">
     <table>
     <col width="550">
 
@@ -308,7 +308,10 @@
                 <td>
             </tr>
             <tr>
-                <td></td>
+                <td>
+
+		
+		</td>
                 <td>
 
     <input type="submit" name="submit" value="Submit" />
@@ -344,21 +347,44 @@
                 <td>
                     <label for="IPp">IP Address:</label>
 
-                    <input type="text" name="text1" id="IPp">
+                    <input type="text" name="IP" id="IP">
                 </td>
                 <td></td>
                 <td>
-                    <label for="range">Range of Ports:</label>
-			<input type="text" name="text2" id="start">
-                    <input type="text" name="text3" id="end">
+                    <label for="range">Start:</label>
+			<input type="text" name="start" id="start">
+			<br>
+			<label for="end">End:</label>
+                    <input type="text" name="end" id="end">
                 </td> </tr>
 
         </table> <br><br>
 <table>
     <col width="600">
     <col width="600">
+	
+    <tr><td>
+	</td>
+ <td>
+
+	<select id="typeofscanning" name="typeofscanning">
+  <option value="NPS">Normal Port Scanning</option>
+  <option value="SYN">TCP SYN</option>
+  <option value="FIN">TCP FIN</option>
+  
+</select>
+</td>
+</tr></table>
+<br><br><br><br>
+<table>
+    <col width="600">
+    <col width="600">
+	
     <tr>
-        <td></td>
+ <td>
+ </td>
+	
+       
         <td>
         <INPUT TYPE=CHECKBOX NAME="random"> Random
 
@@ -366,7 +392,10 @@
         </tr>
     <tr></tr>
     <tr>
-        <td></td>
+        <td>
+
+
+</td>
         <td>
 
             <input class="cen" type="submit" name="submit" value="Submit"/>

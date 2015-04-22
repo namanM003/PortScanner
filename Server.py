@@ -2,8 +2,10 @@ import socket
 import sys
 import thread
 import time
+import os
 from threading import Thread, Lock
 from threading import Condition
+from netaddr import IPNetwork
 import logging
 import random
 import cPickle as pickle
@@ -29,14 +31,18 @@ response_queue = []
 condition = Condition()
 condition_response = Condition()
 
+logger = None
+
 def InitializeLogger(Name): 
-    logger = logging.getLogger(Name) hdlr = logging.FileHandler(Name + '.log') 
+    logger = logging.getLogger(Name) 
+    hdlr = logging.FileHandler(Name + '.log') 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') 
     hdlr.setFormatter(formatter) 
     logger.addHandler(hdlr) 
     logger.setLevel(logging.INFO)
 
 def add_client():
+    global logger
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     server_address = ('localhost', 10000)
@@ -50,7 +56,7 @@ def add_client():
         print >>sys.stderr, 'waiting for a connection'
         connection, client_address = sock.accept()
         clients.append(client_address)
-	logger.info("New Client added : " + str(client_address))
+	#logger.info("New Client added : " + str(client_address))
         
         try:
             print >>sys.stderr, 'connection from', client_address
@@ -73,6 +79,7 @@ def add_client():
 
 
 def client_listen():
+    global logger
     sock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('localhost', 10001)
     print >>sys.stderr, 'starting up on %s port %s' % server_address
@@ -83,7 +90,7 @@ def client_listen():
     while True:
         # Wait for a connection
         print >>sys.stderr, 'waiting for a connection'
-	logger.info("Waiting for response from clients")
+	#logger.info("Waiting for response from clients")
         connection, client_address = sock1.accept()
         try:
             print >>sys.stderr, 'connection from', client_address
@@ -93,7 +100,7 @@ def client_listen():
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
             print " Got Response " + str(response.result_dict)
-	    logger.info("Got response " + str(response.ip_addr) + ":" + str(response.date_today))
+	    #logger.info("Got response " + str(response.ip_addr) + ":" + str(response.date_today))
 	    ProducerResponse(response);
                 
         finally:
@@ -123,37 +130,70 @@ def broadcast_message():
                 print >>sys.stderr, 'closing socket'
                 sock.close()
 
-def send_client(client_address, request, port_start, port_end):
+def send_client(client_address, request,start, end, ip_list):
+    global logger
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(client_address)
-	port_list = []
-	for i in range(port_start,port_end+1):
-		port_list.append(i)
-        client_request = ClientRequest(request.type,request.ip_addr,0,port_start,port_end, port_list, request.date_today,request.port_scanning_mode)
+	if request.type == 1:
+		client_request = ClientRequest(request.type, request.ip_addr,0,0,0,0,request.date_today,request.port_scanning_mode)	
+	if request.type == 2:
+		ip = []
+		for i in range(start, end + 1):
+			ip.append(ip_list[i])
+		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today.request.port_scanning_mode)
+	if request.type == 3:
+		port_list = []
+		for i in range(start,end+1):
+			port_list.append(i)
+       		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode)
         data_string = pickle.dumps(client_request, -1)
-        print 'sending' + str(client_request.type) + ' to ' , client_address
-	logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
-        sock.sendall(data_string)
+	print 'sending' + str(client_request.type) + ' to ' , client_address
+	#logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
+	sock.sendall(data_string)
     finally:
         print >>sys.stderr, 'closing socket'
         sock.close()
         
 
 class ConsumerThread(Thread):
+    global logger
     def run(self):
         global queue
         while True:
             condition.acquire()
             if not queue:
                 print "Nothing in queue, consumer is waiting"
-		logger.info("Nothing in queue, consumer is waiting")
+		#logger.info("Nothing in queue, consumer is waiting")
                 condition.wait()
                 print "Producer added something to queue and notified the consumer"
-		logger.info("Producer added something to queue and notifies the consumer")
+		#logger.info("Producer added something to queue and notifies the consumer")
             request = queue.pop(0)
             print "Consumed", request.ip_addr , request.type
-	    logger.info("Consumed :" + str(request.ip_addr) + ":" + str(request.date_today))
+	    #logger.info("Consumed :" + str(request.ip_addr) + ":" + str(request.date_today))
+	    if request.type == 1:
+		send_client(clients[0], request, 0, 0, None)
+	    if request.type == 2:
+		ip_with_subnet = str(request.ip_addr) + "/" + str(request.ip_subnet)
+		total_list = list()
+		for ip in IPNetwork(ip_with_subnet):
+   			total_list.append(str(ip))
+		length = len(clients)
+		no_of_ips = len(total_list)
+		ips = no_of_ips/length
+		start = 0
+		end = start + ips - 1
+		i = 0
+		while True:
+		    if (end >= len(total_list)-1):
+			if (start <= len(total_list)-1):
+		              send_client(clients[i],request,start,len(total_list)-1,total_list)
+		    	break
+		    else :
+			send_client(clients[i],request,start,end,total_list)
+			i = (i+1)%length
+			start = end + 1
+			end = start + ips -1
             if request.type == 3:
                 no_of_ports = request.port_end - request.port_start + 1
                 length = len(clients)
@@ -164,10 +204,10 @@ class ConsumerThread(Thread):
                 while True:
                     if (end >=  request.port_end):
                         if (start <= request.port_end):
-                            send_client(clients[i], request, start, request.port_end)
+                            send_client(clients[i], request, start, request.port_end,None)
                         break
                     else :
-                        send_client(clients[i], request, start, end)
+                        send_client(clients[i], request, start, end,None)
                         i = (i + 1)%length
                         start = end + 1
                         end = start + ports - 1
@@ -291,9 +331,9 @@ class myHandler(BaseHTTPRequestHandler):
 			start_port = form["start"].value
 			end_port = form["end"].value
 			#random1 = form["random"].value
-			
+			#print form["random"].value	
 			today = datetime.now()
-			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),False,today,333)
+			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),False,today,3)
 			#request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
 			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
