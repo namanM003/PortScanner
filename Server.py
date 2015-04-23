@@ -14,6 +14,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from os import curdir, sep
 import cgi
 import sqlite3
+import json
 from datetime import datetime
 #from datatypes import Request
 
@@ -304,19 +305,33 @@ class myHandler(BaseHTTPRequestHandler):
                         if self.path.endswith(".js"):
                                 mimetype='application/javascript'
                                 sendReply = True
-                                sendReply = True
+			#TRYING FOR JSON OBJECT RESPONSE##################
+                        if self.path.endswith(".json"):
+			        mimetype='application/json'
+				sendReply = True
+				
+			#################################################
                         if self.path.endswith(".css"):
                                 mimetype='text/css'
                                 sendReply = True
 
                         if sendReply == True:
                                 #Open the static file requested and send it
+				
                                 f = open(curdir + sep + self.path)
                                 self.send_response(200) 
                                 self.send_header('Content-type',mimetype)
                                 self.end_headers()
                                 self.wfile.write(f.read())
                                 f.close()
+				
+                                #f = open(curdir + sep + self.path)
+                                #self.send_response(200) 
+                                #self.send_header('Content-type',mimetype)
+                                #self.end_headers()
+                                #self.request.send("Hello")
+				print "In server"                                
+
                         return
 
                 except IOError:
@@ -353,6 +368,24 @@ class myHandler(BaseHTTPRequestHandler):
 			db.commit()
 			Producer(request)
 			return
+		#######JUST TESTING DO REMOVE IT#########
+		if self.path == "/test":
+			form = cgi.FieldStorage(
+                                fp = self.rfile,
+                                headers = self.headers,
+                                environ={'REQUEST_METHOD':'POST'
+                                 #'CONTENT_TYPE':self.headers['Content-Type'],
+                        })
+			self.send_response(200)
+                        self.send_header('Content-Type','text/html')
+                        #data = {}
+                        #data['test'] = 'OK'
+                        #json_data = json.dumps(data)
+                        #self.send_data("HELLO")
+                        self.end_headers()
+			self.wfile.write("HELLO")
+
+		#######################################
 		if self.path == "/hosts":
 			form = cgi.FieldStorage(
 				fp = self.rfile,
@@ -361,6 +394,15 @@ class myHandler(BaseHTTPRequestHandler):
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
 			today = datetime.now()
+			############TRY######
+			self.send_response(200)
+			self.send_header('Content-Type','application/json')
+			data = {}
+			data['test'] = 'OK'
+			json_data = json.dumps(data)
+			self.request.send(json_data)
+			self.end_headers()
+			######################
 			#if form["Multi-Host"].value == False:
 			if True:
 #IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
