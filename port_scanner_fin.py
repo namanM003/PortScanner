@@ -59,5 +59,5 @@ def scan_port_fin(ports,ip):
 
     return open_close_dict
 
-dict_l = scan_port_fin([70,71,72,73,74,80],ip)
-print str(dict_l)
+#dict_l = scan_port_fin([70,71,72],ip)
+#print str(dict_l)
