@@ -16,7 +16,6 @@ import cgi
 import sqlite3
 import json
 from datetime import datetime
-#from datatypes import Request
 
 
 PORT_NUMBER = 8070
