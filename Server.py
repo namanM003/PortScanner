@@ -7,7 +7,7 @@ from threading import Thread, Lock
 from threading import Condition
 from netaddr import IPNetwork
 import logging
-import random
+from random import shuffle
 import cPickle as pickle
 from datatypes import *
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
@@ -141,11 +141,15 @@ def send_client(client_address, request,start, end, ip_list):
 		ip = []
 		for i in range(start, end + 1):
 			ip.append(ip_list[i])
+		if request.random == True:
+			shuffle(ip_list)
 		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today.request.port_scanning_mode)
 	if request.type == 3:
 		port_list = []
 		for i in range(start,end+1):
 			port_list.append(i)
+		if request.random == True:
+			shuffle(port_list)
        		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode)
         data_string = pickle.dumps(client_request, -1)
 	print 'sending' + str(client_request.type) + ' to ' , client_address
@@ -247,7 +251,10 @@ class ConsumerResponseThread(Thread):
 	    if response.type == 3:
                 print " In type 3 "
                 for k,v in response.result_dict.items():
-                	cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v))
+                	if v=="HostDown":
+				cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,None))
+			else:
+				cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v))
             db.commit()
 	    condition_response.release()
             time.sleep(1)
@@ -330,10 +337,16 @@ class myHandler(BaseHTTPRequestHandler):
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
 			end_port = form["end"].value
-			#random1 = form["random"].value
-			#print form["random"].value	
+			random1 = False
+			try:
+				random1 = form["random"].value
+				random1 = True
+			except:
+				random1 = False
+			print random1
+			port_scan_mode = form["typeofscanning"].value
 			today = datetime.now()
-			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),False,today,3)
+			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),random1,today,int(port_scan_mode))
 			#request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
 			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
@@ -348,15 +361,21 @@ class myHandler(BaseHTTPRequestHandler):
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
 			today = datetime.now()
-			if form["Multi-Host"].value == False:
+			#if form["Multi-Host"].value == False:
+			if True:
 #IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
+				'''
 				type_scan = 1
 				internet_protocol = form["IP"].value
 				start_port = 0
 				end_port = 0 
 				request = Request(type_scan, internet_protocol,0,start_port,end_port)
-				random = form["random"].value
-				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				'''
+				request = Request(1,"8.8.8.8",0,0,0,False,today,1)
+				#random = form["random"].value
+				#cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				#db.commit()
+				cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',("8.8.8.8",1,None,today))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"

@@ -40,7 +40,7 @@ def scan_port_connect(port_list,ip):
 
             print "Scan Complete : for the ports with results" + str(open_close_dict)
          else:
-              for port in ports:
+              for port in port_list:
                 open_close_dict[port] = "HostDown"
               print "Host %s is down " % ip
          return open_close_dict
