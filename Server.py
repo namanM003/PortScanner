@@ -143,7 +143,7 @@ def send_client(client_address, request,start, end, ip_list):
 			ip.append(ip_list[i])
 		if request.random == True:
 			shuffle(ip_list)
-		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today.request.port_scanning_mode)
+		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode)
 	if request.type == 3:
 		port_list = []
 		for i in range(start,end+1):
@@ -367,24 +367,6 @@ class myHandler(BaseHTTPRequestHandler):
 			db.commit()
 			Producer(request)
 			return
-		#######JUST TESTING DO REMOVE IT#########
-		if self.path == "/test":
-			form = cgi.FieldStorage(
-                                fp = self.rfile,
-                                headers = self.headers,
-                                environ={'REQUEST_METHOD':'POST'
-                                 #'CONTENT_TYPE':self.headers['Content-Type'],
-                        })
-			self.send_response(200)
-                        self.send_header('Content-Type','text/html')
-                        #data = {}
-                        #data['test'] = 'OK'
-                        #json_data = json.dumps(data)
-                        #self.send_data("HELLO")
-                        self.end_headers()
-			self.wfile.write("HELLO")
-
-		#######################################
 		if self.path == "/hosts":
 			form = cgi.FieldStorage(
 				fp = self.rfile,
@@ -394,6 +376,7 @@ class myHandler(BaseHTTPRequestHandler):
 			})
 			today = datetime.now()
 			############TRY######
+			'''
 			self.send_response(200)
 			self.send_header('Content-Type','application/json')
 			data = {}
@@ -401,22 +384,19 @@ class myHandler(BaseHTTPRequestHandler):
 			json_data = json.dumps(data)
 			self.request.send(json_data)
 			self.end_headers()
+			'''
 			######################
-			#if form["Multi-Host"].value == False:
-			if True:
-#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
-				'''
+			if form["Multi-Host"].value == False:
+			#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
+				
 				type_scan = 1
+				subnet = int(form["subnet"].value)
 				internet_protocol = form["IP"].value
 				start_port = 0
 				end_port = 0 
-				request = Request(type_scan, internet_protocol,0,start_port,end_port)
-				'''
-				request = Request(1,"8.8.8.8",0,0,0,False,today,1)
+				request = Request(type_scan, internet_protocol,0,int(start_port),int(end_port), False,today,1)
 				#random = form["random"].value
-				#cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
-				#db.commit()
-				cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',("8.8.8.8",1,None,today))
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
@@ -424,16 +404,23 @@ class myHandler(BaseHTTPRequestHandler):
 			if form["Multi-Host"].value == True:
 				type_scan = 2
 				internet_protocol = form["IP"].value
+				subnet = int(form["subnet"].value)
 				start_port = 0
 				end_port = 0
-				random = form["random"].value	#We have still not sending this field value as a parameter in request object
-				request = Request(type_scan, internet_protocol, 0, start_port, end_port)
-				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,NULL,today))
+				random1 = False
+				try:
+					random1 = form["random"].value
+					random1 = True
+				except:
+					random1 = False
+				#random = form["random"].value	#We have still not sending this field value as a parameter in request object
+				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1)
+				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
 				return
-		'''
+		
 		if self.path == "/results":
 			form = cgi.FieldStorage(
 				fp = self.rfile,
@@ -441,6 +428,28 @@ class myHandler(BaseHTTPRequestHandler):
 				environ={'REQUEST_METHOD':'POST',
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
+			self.send_response(200)
+			self.send_header('Content-Type','application/json')
+			con = cursor.execute("SELECT * FROM IPINFO")
+			rows = con.fetchall()
+			results_host = []
+			result_host = {}	
+			for row in rows:
+				result_host["IP"] = row[0]
+				result_host["ALIVE"] = row[2]
+				result_host["DATE"] = row[3]
+				result_host["TYPE"] = row[1]
+				results_host.append(result_host)
+			json_data = json.dumps(results_host)
+			self.end_headers()
+			self.wfile.write(json_data)
+			#form1 = self.FieldStorage()
+			#data = json.loads(self)
+			#print data
+			#print form1["name"]
+			print form["city"]
+			return 
+			'''
 			if form['Result'].value == "HostScanning":
 				if form["IP"].value == "none"
 					
