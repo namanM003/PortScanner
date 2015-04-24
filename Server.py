@@ -435,12 +435,15 @@ class myHandler(BaseHTTPRequestHandler):
 			con = cursor.execute("SELECT * FROM IPINFO")
 			rows = con.fetchall()
 			results_host = []
-			result_host = {}	
+			#result_host = {}	
 			for row in rows:
+				print str(row)
+				result_host = {}
 				result_host["IP"] = row[0]
 				result_host["ALIVE"] = row[2]
 				result_host["DATE"] = row[3]
 				result_host["TYPE"] = row[1]
+				print result_host["IP"]
 				results_host.append(result_host)
 			json_data = json.dumps(results_host)
 			self.end_headers()
