@@ -63,6 +63,7 @@
 
     </style>
 
+
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
         
@@ -106,20 +107,19 @@
 
 
 	function myFunct(ip) {
-
-           // var range = document.forms["form1"]["text2"].value;
-            //alert(range);
-		if(ip.indexOf('/') === -1)
+		if(ip.indexOf('/') == -1)
 		{
- 			document.forms["form1"]["subval"].value=false; 
+ 			document.forms["form1"]["Multi-Host"].value="false"; 
+			document.forms["form1"]["subnet"].value="0";
 		}
-		
 		else
 		{
-			document.forms["form1"]["subval"].value=false;
+			document.forms["form1"]["Multi-Host"].value="true";
+			var sub=ip.split("/");
+			document.forms["form1"]["subnet"].value=sub[1];
+			document.forms["form1"]["IP"].value=sub[0];
 			return myFunctSub(ip);
 		}
-
 
             var ip = ip.split(".");
             // alert(ip);
@@ -238,6 +238,50 @@
 <button style="width: 40%" id="portdiv">Port Scan</button>
     </td>
 </tr>
+<tr><td></td><td>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    $("#Result").click(function(){
+        $.post("/results",
+        {
+          name: $("#tp").val(),
+          city: "Duckburg"
+        },
+        function(data,status){
+          //  var arr = $.parseJSON(data)
+            var out=" ";
+alert("HERE ");
+var i;
+var out = "<html><body><table border='1'>";
+
+for(i=0;i < Object.keys(data).length; i++)
+{
+out += "<tr><td>" +
+        data[i].IP +
+        "</td><td>" +
+        data[i].TYPE +
+"</td><td>" +
+        data[i].DATE +
+"</td><td>" +
+data[i].ALIVE +
+        "</td></tr>";
+//out=out+employees[i].firstName + " " + employees[i].lastName+" ";
+
+}
+    
+out=out+"</table></body></html>";
+
+document.write(out);
+        });
+    });
+});
+</script>
+<input type="text" id="tp">
+<button id="Result">All Results</button>
+    
+   
+</td></tr>
 </table>
 <br>
 <br>
@@ -263,7 +307,8 @@
 
 </table>
 <br><br>
-<input type=hidden id=Multi-Host value=false name=subval />
+<input type=hidden id="Multi-Host" value="false" name="Multi-Host" />
+<input type=hidden id="subnet" value="false" name="subnet" />
         <!--<table>
             <col width="600">
 
@@ -386,7 +431,7 @@
 	
        
         <td>
-        <INPUT TYPE=CHECKBOX NAME="random" > Random
+        <INPUT TYPE=CHECKBOX NAME="random"> Random
 
         <td>
         </tr>

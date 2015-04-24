@@ -385,8 +385,10 @@ class myHandler(BaseHTTPRequestHandler):
 			self.request.send(json_data)
 			self.end_headers()
 			'''
-			######################
-			if form["Multi-Host"].value == False:
+			###########1###########
+			print "Reached Host Function"
+			print form["Multi-Host"].value
+			if form["Multi-Host"].value == "false":
 			#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
 				
 				type_scan = 1
@@ -396,12 +398,12 @@ class myHandler(BaseHTTPRequestHandler):
 				end_port = 0 
 				request = Request(type_scan, internet_protocol,0,int(start_port),int(end_port), False,today,1)
 				#random = form["random"].value
-				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
+				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
 				return
-			if form["Multi-Host"].value == True:
+			if form["Multi-Host"].value == "true":
 				type_scan = 2
 				internet_protocol = form["IP"].value
 				subnet = int(form["subnet"].value)
@@ -415,8 +417,8 @@ class myHandler(BaseHTTPRequestHandler):
 					random1 = False
 				#random = form["random"].value	#We have still not sending this field value as a parameter in request object
 				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1)
-				cursor.execute('''(INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
-				db.commit()
+				#cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
+				#db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
 				return
