@@ -256,17 +256,25 @@ var i;
 var out = "<html><body><form name='form3' action='/result2' method='post' ><table border='1'>";
 var val;
 for(i=0;i < Object.keys(data).length; i++)
-{val=data[i].IP+","+data[i].TYPE+","+","+data[i].DATE+","+data[i].ALIVE;
+{val=data[i].IP+","+data[i].TYPE+","+data[i].TIME+","+data[i].DATE1+","+data[i].ALIVE;
+type= "";
+if (data[i].TYPE == "1")
+	type= "Single Host Scan";
+if (data[i].TYPE == "2")
+	type= "Multi-Host Scan";
+if (data[i].TYPE == "3")
+	type= "Port-Scan";
 out += "<tr><td>" +
         data[i].IP +
         "</td><td>" +
-        data[i].TYPE +
+        type +
 "</td><td>" +
-        data[i].DATE +
-"</td><td>" +
+        data[i].TIME +
+"</td><td>"+
 data[i].ALIVE +
 "</td><td>" +
-"<input type='radio' name='q' value="+val+">"+ "</td></tr>";
+
+"<input type='radio' name='val' value="+val+">"+ "</td></tr>";
 //out=out+employees[i].firstName + " " + employees[i].lastName+" ";
 
 }
