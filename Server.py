@@ -247,15 +247,17 @@ class ConsumerResponseThread(Thread):
 	    if response.type == 2:
                 print " In type 2 "
 		for k,v in response.result_dict.items():
-            		cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME,DATE1)VALUES(?,?,?,?,?)''',(k,2,v,response.date_today,response.date_only))
+            		cursor.execute('''INSERT INTO IPDATA(IP,ALIVE,TIME,DATE1)VALUES(?,?,?,?)''',(k,v,response.date_today,response.date_only))
 	    if response.type == 3:
                 print " In type 3 "
                 for k,v in response.result_dict.items():
                 	if v=="HostDown":
 				cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,None))
+				cursor.execute('''UPDATE IPINFO SET ALIVE = ? WHERE IP = ? AND TIME = ?''',(False, response.ip_addr, response.date_today))
 			else:
 				print response.date_today
 				cursor.execute('''INSERT INTO PORTDATA(PORT,IP,TIME,ALIVE)VALUES(?,?,?,?)''',(k,response.ip_addr, response.date_today,v))
+				cursor.execute('''UPDATE IPINFO SET ALIVE = ? WHERE IP = ? AND TIME = ?''',(True, response.ip_addr, response.date_today))
             db.commit()
 	    condition_response.release()
             time.sleep(1)
@@ -420,7 +422,7 @@ class myHandler(BaseHTTPRequestHandler):
 					random1 = False
 				#random = form["random"].value	#We have still not sending this field value as a parameter in request object
 				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1,date_today)
-				#cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
+				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
 				#db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
@@ -483,41 +485,78 @@ class myHandler(BaseHTTPRequestHandler):
 			TYPE = int(string[2])
 			print TYPE
 			#############QUERY FOR SPECIFIC DATA RESULT##########
-			TYPE=3
-			con = cursor.execute('SELECT * FROM IPINFO WHERE IP=? AND TYPE=? AND DATE1=?',(IP,TYPE,DATE_Q))
-                        rows = con.fetchall()
-                        results_host = []
+			if TYPE==3:
+				con = cursor.execute('SELECT * FROM IPINFO WHERE IP=? AND TYPE=? AND DATE1=?',(IP,TYPE,DATE_Q))
+        	                rows = con.fetchall()
+                	        results_host = []
                         #result_host = {}       
-			print "QUERY EXECEUTION PHASE"
-                        for row in rows:
-                                print str(row)
-                                result_host = {}
-                                result_host["IP"] = row[0]
-                                result_host["TYPE"] = row[1]
-                                result_host["ALIVE"] = row[2]
-                                result_host["TIME"] = row[3]
-                                result_host["DATE1"] = row[4]
-                                result_host["TYPE"] = row[1]
-                                print result_host["IP"]
-                                results_host.append(result_host["TIME"])
-			port_results = []
-			for data in results_host:
-				print "DATA IN OBJECT"+data
-				con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,data))
-				rows = con.fetchall()
-				for row in rows:
-					port_result = {}
-					port_result["PORT"] = row[0]
-					port_result["IP"] = row[1]
-					port_result["OPEN"] = row[3]
-					print port_result["PORT"]
-					print port_result["IP"]
-					print port_result["OPEN"]
-					port_results.append(port_result)
-					
-                        json_data = json.dumps(port_results)
-                        self.end_headers()
-                        self.wfile.write(json_data)
+				print "QUERY EXECEUTION PHASE"
+                        	for row in rows:
+                                	print str(row)
+	                                result_host = {}
+        	                        result_host["IP"] = row[0]
+                	                result_host["TYPE"] = row[1]
+                        	        result_host["ALIVE"] = row[2]
+	                                result_host["TIME"] = row[3]
+        	                        result_host["DATE1"] = row[4]
+                	                result_host["TYPE"] = row[1]
+                        	        print result_host["IP"]
+                                	results_host.append(result_host["TIME"])
+				port_results = []
+				for data in results_host:
+					print "DATA IN OBJECT"
+					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,data))
+					rows = con.fetchall()
+					for row in rows:
+						port_result = {}
+						port_result["PORT"] = row[0]
+						port_result["IP"] = row[1]
+						port_result["OPEN"] = row[3]
+						print port_result["PORT"]
+						print port_result["IP"]
+						print port_result["OPEN"]
+						port_results.append(port_result)
+						
+        	                json_data = json.dumps(port_results)
+                	        self.end_headers()
+                        	self.wfile.write(json_data)
+			if TYPE == 2:
+                                con = cursor.execute('SELECT * FROM IPINFO WHERE IP=? AND TYPE=? AND DATE1=?',(IP,TYPE,DATE_Q))
+                                rows = con.fetchall()
+                                results_host = []
+                        #result_host = {}       
+                                print "QUERY EXECEUTION PHASE"+str(TYPE)
+                                for row in rows:
+                                        print str(row)
+                                        result_host = {}
+                                        result_host["IP"] = row[0]
+                                        result_host["TYPE"] = row[1]
+                                        result_host["ALIVE"] = row[2]
+                                        result_host["TIME"] = row[3]
+                                        result_host["DATE1"] = row[4]
+                                        result_host["TYPE"] = row[1]
+                                        print result_host["IP"]
+                                        results_host.append(result_host["TIME"])
+                                ip_results = []
+                                for data in results_host:
+                                        print "DATA IN OBJECT" + str(data)
+                                        con = cursor.execute('SELECT * FROM IPDATA WHERE TIME=?',[data])
+                                        rows = con.fetchall()
+                                        for row in rows:
+                                                ip_result = {}
+                                                ip_result["IP"] = row[0]
+                                                ip_result["ALIVE"] = row[1]
+                                                
+                                                print ip_result["ALIVE"]
+                                                print ip_result["IP"]
+                                                #print ip_result["OPEN"]
+                                                ip_results.append(ip_result)
+
+                                json_data = json.dumps(ip_results)
+                                self.end_headers()
+                                self.wfile.write(json_data)
+
+				
 			###################QUERY FOR PORT DATA END#############	
 		'''
 			if form['Result'].value == "HostScanning":
