@@ -15,7 +15,7 @@ from os import curdir, sep
 import cgi
 import sqlite3
 import json
-from datetime import datetime
+import datetime
 
 
 PORT_NUMBER = 8070
@@ -136,21 +136,21 @@ def send_client(client_address, request,start, end, ip_list):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(client_address)
 	if request.type == 1:
-		client_request = ClientRequest(request.type, request.ip_addr,0,0,0,0,request.date_today,request.port_scanning_mode)	
+		client_request = ClientRequest(request.type, request.ip_addr,0,0,0,0,request.date_today,request.port_scanning_mode,request.date_only)	
 	if request.type == 2:
 		ip = []
 		for i in range(start, end + 1):
 			ip.append(ip_list[i])
 		if request.random == True:
 			shuffle(ip_list)
-		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode)
+		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode,request.date_only)
 	if request.type == 3:
 		port_list = []
 		for i in range(start,end+1):
 			port_list.append(i)
 		if request.random == True:
 			shuffle(port_list)
-       		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode)
+       		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode,request.date_only)
         data_string = pickle.dumps(client_request, -1)
 	print 'sending' + str(client_request.type) + ' to ' , client_address
 	#logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
@@ -243,11 +243,11 @@ class ConsumerResponseThread(Thread):
             if response.type == 1:
                 print " In type 1 "
 		for k,v in response.result_dict.items():
-			cursor.execute('''UPDATE IPINFO SET ALIVE = ? WHERE IP = ? AND TIME = ? ''',(v,response.ip_addr,response.date_today)) #We assume there will be only one result
+			cursor.execute('''UPDATE IPINFO SET ALIVE = ? WHERE IP = ? AND TIME = ?''',(v,response.ip_addr,response.date_today)) #We assume there will be only one result
 	    if response.type == 2:
                 print " In type 2 "
 		for k,v in response.result_dict.items():
-            		cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(k,2,v,response.date_today))
+            		cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME,DATE1)VALUES(?,?,?,?,?)''',(k,2,v,response.date_today,response.date_only))
 	    if response.type == 3:
                 print " In type 3 "
                 for k,v in response.result_dict.items():
@@ -359,11 +359,12 @@ class myHandler(BaseHTTPRequestHandler):
 				random1 = False
 			print random1
 			port_scan_mode = form["typeofscanning"].value
-			today = datetime.now()
-			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),random1,today,int(port_scan_mode))
+			today = datetime.datetime.now()
+			date_today = datetime.date.today()
+			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),random1,today,int(port_scan_mode),date_today)
 			#request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
-			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
+			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME,DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
 			db.commit()
 			Producer(request)
 			return
@@ -374,7 +375,8 @@ class myHandler(BaseHTTPRequestHandler):
 				environ={'REQUEST_METHOD':'POST',
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
-			today = datetime.now()
+			today = datetime.datetime.now()
+			date_today = datetime.date.today()
 			############TRY######
 			'''
 			self.send_response(200)
@@ -396,9 +398,9 @@ class myHandler(BaseHTTPRequestHandler):
 				internet_protocol = form["IP"].value
 				start_port = 0
 				end_port = 0 
-				request = Request(type_scan, internet_protocol,0,int(start_port),int(end_port), False,today,1)
+				request = Request(type_scan, internet_protocol,0,int(start_port),int(end_port), False,today,1,date_today)
 				#random = form["random"].value
-				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
+				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
@@ -416,7 +418,7 @@ class myHandler(BaseHTTPRequestHandler):
 				except:
 					random1 = False
 				#random = form["random"].value	#We have still not sending this field value as a parameter in request object
-				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1)
+				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1,date_today)
 				#cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME)VALUES(?,?,?,?)''',(form["IP"].value,type_scan,None,today))
 				#db.commit()
 				Producer(request)
@@ -441,7 +443,8 @@ class myHandler(BaseHTTPRequestHandler):
 				result_host = {}
 				result_host["IP"] = row[0]
 				result_host["ALIVE"] = row[2]
-				result_host["DATE"] = row[3]
+				result_host["DATE"] = row[4]
+				result_host["DATETIME"] = row[3]
 				result_host["TYPE"] = row[1]
 				print result_host["IP"]
 				results_host.append(result_host)
@@ -452,9 +455,20 @@ class myHandler(BaseHTTPRequestHandler):
 			#data = json.loads(self)
 			#print data
 			#print form1["name"]
-			print form["city"]
+			#print form["city"]
 			return 
-			'''
+                if self.path == "/result2":
+                        form = cgi.FieldStorage(
+                                fp = self.rfile,
+                                headers = self.headers,
+                                environ={'REQUEST_METHOD':'POST',
+                                 'CONTENT_TYPE':self.headers['Content-Type'],
+                        })
+                        self.send_response(200)
+                        self.send_header('Content-Type','application/json')
+			print form["q"]
+	
+		'''
 			if form['Result'].value == "HostScanning":
 				if form["IP"].value == "none"
 					

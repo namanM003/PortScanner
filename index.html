@@ -253,10 +253,10 @@ $(document).ready(function(){
             var out=" ";
 alert("HERE ");
 var i;
-var out = "<html><body><table border='1'>";
-
+var out = "<html><body><form name='form3' action='/result2' method='post' ><table border='1'>";
+var val;
 for(i=0;i < Object.keys(data).length; i++)
-{
+{val=data[i].IP+","+data[i].TYPE+","+","+data[i].DATE+","+data[i].ALIVE;
 out += "<tr><td>" +
         data[i].IP +
         "</td><td>" +
@@ -265,12 +265,13 @@ out += "<tr><td>" +
         data[i].DATE +
 "</td><td>" +
 data[i].ALIVE +
-        "</td></tr>";
+"</td><td>" +
+"<input type='radio' name='q' value="+val+">"+ "</td></tr>";
 //out=out+employees[i].firstName + " " + employees[i].lastName+" ";
 
 }
     
-out=out+"</table></body></html>";
+out=out+"</table><input type='submit' name='submit' value='Submit'/></form></body></html>";
 
 document.write(out);
         });

@@ -21,7 +21,7 @@ condition = Condition()
 def scan_ip(port_list):
  response = dict()
  for i in range(0,len(port_list)):
-      if(True == is_up(port_list)):
+      if(True == is_up(port_list[i])):
           response[port_list[i]] = True
       else:
           response[port_list[i]]  = False
@@ -69,7 +69,7 @@ class ConsumerThread(Thread):
                  
             else:
                  print "GOT WRONG PACKET"                 
-            resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response)
+            resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response,request.date_only)
             print "Sending to the server"
             server_send(resp)            
             
