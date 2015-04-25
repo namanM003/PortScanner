@@ -473,12 +473,15 @@ class myHandler(BaseHTTPRequestHandler):
 			print form["name"]
 			sup = str(form["name"])
 			string = sup.split(",")
-			#print form["val"][1]
+                 
 			for stri in string:
 				print stri
 			IP = string[1].split("'")
 			IP = IP[1]
-			print IP
+		        if (IP == "Empty"):
+                          print "Empty table"
+                          return 
+                   	print IP
 			DATEQ = string[3]+" "+string[4]
 			#DATE_Q = DATE_Q[0]
 			print DATEQ
@@ -511,16 +514,16 @@ class myHandler(BaseHTTPRequestHandler):
 				for data in range(0,1):
 					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,DATEQ))
 					rows = con.fetchall()
-                                        scan = True
+                                        scan = 1
 					if len(rows) == int(LENGTH):
 						print "TRUi"
-                                                scan = True
+                                                scan = 1
 					else:
 						print "FALSE"
-                                                scan = False
+                                                scan = 0
 					if len(rows) == 0:
 						port_result = {}
-						port_result["SCAN"] = False
+						port_result["SCAN"] = 0
 						port_results.append(port_result)
 					for row in rows:
 						port_result = {}
@@ -560,16 +563,16 @@ class myHandler(BaseHTTPRequestHandler):
                                 for data in range(0,1):
                                         con = cursor.execute('SELECT * FROM IPDATA WHERE TIME=?',[DATEQ])
                                         rows = con.fetchall()
-                                        scan = True
+                                        scan = 1
                                         if len(rows) == int(LENGTH):
                                                 print "TRUi"
-                                                scan = True
+                                                scan = 1
                                         else:
                                                 print "FALSE"
-                                                scan = False
+                                                scan = 0
                                         if len(rows) == 0:
 						ip_result = {}
-                                                ip_result["SCAN"] = False
+                                                ip_result["SCAN"] = 0
                                                 ip_results.append(ip_result)
 
                                         for row in rows:

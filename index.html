@@ -70,12 +70,6 @@
 
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
-       function myFunction() {
-	    var x = document.getElementById("val");
-	    x.checked = true;
-	    alert(x.value);
-            alert(" Common ");
-        } 
 	function myFunctSub(ip) {
 
            // var range = document.forms["form1"]["text2"].value;
@@ -304,7 +298,7 @@
 //$(document).ready(function(){
     $("#table32").click(function()
    {
-    var _result;
+        var _result = "Empty";
     
     
         var o_radio_group = document.getElementsByName("val");
@@ -329,10 +323,10 @@
 
             var i;
             var out = "<html><body><table border='1'>";
-            alert(" Came in this function ")
+            alert(" Should see variable value ")
 	    alert(data[0].SCAN)
-            if(data[0].SCAN == 'False') 
-             { 
+            if(data[0].SCAN == '0') 
+             {  alert( "Came here after false"); 
                document.write("Scanning in Progress. Go Back to view results");
                return; 
              } 
@@ -365,10 +359,10 @@ out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
             }
             else
             {
-                
+            out += "<tr><td>" +"IP" +"</td><td>" +"Alive"+"</td></tr>";
+     
                 for(i=0;i < Object.keys(data).length; i++)
                 {
-                out= "<tr><td>" +"IP" +"</td><td>" +"Alive"+"</td></tr>";
                 
                 out += "<tr><td>" +
                         data[i].IP +
@@ -441,9 +435,17 @@ out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
 </div>
 
 <div id="more_result" class="more_result">
+<form action="http://127.0.0.1:8070">
+    <input type="submit" value="Go to home page">
+</form>
+
+</div>
+
+<div id="go_back" class="go_back">
 <button id="table32" >More Results</button>
 
 </div>
+
 <div class="host">
     <hr>
     <h3 align="center">Enter the details:</h3><br>
