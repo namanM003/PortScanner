@@ -269,19 +269,25 @@
        	     data[i].IP +
         	    "</td><td>" +
         	    type +
-    		"</td><td>" +
-          	  data[i].TIME +
-    	"</td><td>"+
-    	data[i].ALIVE +
-    	"</td><td>" +
+    		  "</td><td>" +
+              data[i].TIME +
+        "</td><td>"
+        if(data[i].ALIVE == "1")
+               alive  =  " Host is alive "
+        else if (data[i].ALIVE == "0")
+               alive  =  "Host is down"
+        else alive    = " Select more results "
+        out += alive +
+        "</td><td>" +
 
-    	"<input type='radio' name='val' value="+val+" id='val'>"+ "</td></tr>";
+        "<input type='radio' name='val' value="+val+" id='val'>"+ "</td></tr>";
+     
      
      
     }
     
         out=out+"</table>";
-        alert("Here Shrey Yo")
+
         var dvTable = document.getElementById("dvTable");
         dvTable.innerHTML = out;
         
@@ -311,7 +317,7 @@
                 break;
             }
          }
-        alert(_result);
+      
         $.post("/result2",
         {
           name: _result,
@@ -323,10 +329,10 @@
 
             var i;
             var out = "<html><body><table border='1'>";
-            alert(" Should see variable value ")
-	    alert(data[0].SCAN)
+        
+	    
             if(data[0].SCAN == '0') 
-             {  alert( "Came here after false"); 
+             {  
                document.write("Scanning in Progress. Go Back to view results");
                return; 
              } 
@@ -338,10 +344,12 @@ out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
                 for(i=0;i < Object.keys(data).length; i++)
                 {
                 
-                    if(data[i].OPEN=="NULL")
-                    {
-                        data[i].OPEN="Host Down";
-                    }
+                    if(data[i].OPEN=="1")                    
+                        data[i].OPEN = "Yes";                    
+                   else if(data[i].OPEN == "0")
+                        data[i].OPEN = "No" 
+                   else data[i].OPEN = " Host Down "
+
                 out += "<tr><td>" +
                         data[i].IP +
                          "</td><td>" +
