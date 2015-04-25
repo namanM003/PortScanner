@@ -256,7 +256,9 @@ var i;
 var out = "<html><body><form name='form3' action='/result2' method='post' ><table border='1'>";
 var val;
 for(i=0;i < Object.keys(data).length; i++)
-{val=data[i].IP+","+data[i].TYPE+","+data[i].TIME+","+data[i].DATE1+","+data[i].ALIVE;
+{strs = data[i].TIME
+ strs = strs.split(" ");
+val=data[i].IP+","+data[i].TYPE+","+strs[0]+","+strs[1]+","+data[i].ALIVE;
 type= "";
 if (data[i].TYPE == "1")
 	type= "Single Host Scan";
@@ -286,7 +288,7 @@ document.write(out);
     });
 });
 </script>
-<input type="text" id="tp">
+<input type="date" id="tp" >
 <button id="Result">All Results</button>
     
    

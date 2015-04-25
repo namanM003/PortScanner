@@ -272,17 +272,7 @@ def ProducerResponse(response):
         print "Notifying"
         condition_response.notify()
     condition_response.release()    
-# Listen for incoming connections
-#try:
-#    thread.start_new_thread(add_client, () )
- #   thread.start_new_thread(broadcast_message,( ))
-#    thread.start_new_thread(client_listen,( ))
-#    ConsumerThread().start()
-#except:
-#   print "Error: unable to start thread"
 
-#while 1:
-#   pass
 class myHandler(BaseHTTPRequestHandler):
 
         #Handler for the GET requests
@@ -307,10 +297,6 @@ class myHandler(BaseHTTPRequestHandler):
                         if self.path.endswith(".js"):
                                 mimetype='application/javascript'
                                 sendReply = True
-			#TRYING FOR JSON OBJECT RESPONSE##################
-                        if self.path.endswith(".json"):
-			        mimetype='application/json'
-				sendReply = True
 				
 			#################################################
                         if self.path.endswith(".css"):
@@ -327,12 +313,6 @@ class myHandler(BaseHTTPRequestHandler):
                                 self.wfile.write(f.read())
                                 f.close()
 				
-                                #f = open(curdir + sep + self.path)
-                                #self.send_response(200) 
-                                #self.send_header('Content-type',mimetype)
-                                #self.end_headers()
-                                #self.request.send("Hello")
-				print "In server"                                
 
                         return
 
@@ -450,6 +430,19 @@ class myHandler(BaseHTTPRequestHandler):
 			con = cursor.execute("SELECT * FROM IPINFO")
 			rows = con.fetchall()
 			results_host = []
+			valid = False
+			try:
+				date = form["name"]
+				date = date.split(",")
+				date = date[1].strip("'")
+				print form["name"]
+				valid = True
+			except:
+				valid = False
+			if valid:
+				con = cursor.execute('SELECT * FROM IPINFO WHERE DATE1=?',(date))
+				rows = con.fetchall()
+			#print form["name"]
 			#result_host = {}	
 			for row in rows:
 				print str(row)
@@ -465,13 +458,8 @@ class myHandler(BaseHTTPRequestHandler):
 			json_data = json.dumps(results_host)
 			self.end_headers()
 			self.wfile.write(json_data)
-			#form1 = self.FieldStorage()
-			#data = json.loads(self)
-			#print data
-			#print form1["name"]
-			#print form["city"]
 			return 
-                
+		##################HERE WE ARE REDIRECTED WHEN USER SELECTS A RADIO BUTTON AND CLICK ON TO SEND TO SEE RESULT OF A SPECIFIC EXPERIMENT########3                
 		if self.path == "/result2":
                         form = cgi.FieldStorage(
                                 fp = self.rfile,
@@ -490,13 +478,14 @@ class myHandler(BaseHTTPRequestHandler):
 			IP = string[1].split("'")
 			IP = IP[1]
 			print IP
-			DATE_Q = string[3].split("'")
-			DATE_Q = DATE_Q[0]
-			print DATE_Q
+			DATEQ = string[3]+" "+string[4]
+			#DATE_Q = DATE_Q[0]
+			print DATEQ
 			TYPE = int(string[2])
 			print TYPE
 			#############QUERY FOR SPECIFIC DATA RESULT##########
 			if TYPE==3:
+				'''
 				con = cursor.execute('SELECT * FROM IPINFO WHERE IP=? AND TYPE=? AND DATE1=?',(IP,TYPE,DATE_Q))
         	                rows = con.fetchall()
                 	        results_host = []
@@ -513,10 +502,10 @@ class myHandler(BaseHTTPRequestHandler):
                 	                result_host["TYPE"] = row[1]
                         	        print result_host["IP"]
                                 	results_host.append(result_host["TIME"])
+				'''
 				port_results = []
-				for data in results_host:
-					print "DATA IN OBJECT"
-					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,data))
+				for data in range(0,1):
+					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,DATEQ))
 					rows = con.fetchall()
 					for row in rows:
 						port_result = {}
@@ -533,6 +522,7 @@ class myHandler(BaseHTTPRequestHandler):
                 	        self.end_headers()
                         	self.wfile.write(json_data)
 			if TYPE == 2:
+				'''
                                 con = cursor.execute('SELECT * FROM IPINFO WHERE IP=? AND TYPE=? AND DATE1=?',(IP,TYPE,DATE_Q))
                                 rows = con.fetchall()
                                 results_host = []
@@ -549,10 +539,10 @@ class myHandler(BaseHTTPRequestHandler):
                                         result_host["TYPE"] = row[1]
                                         print result_host["IP"]
                                         results_host.append(result_host["TIME"])
+				'''
                                 ip_results = []
-                                for data in results_host:
-                                        print "DATA IN OBJECT" + str(data)
-                                        con = cursor.execute('SELECT * FROM IPDATA WHERE TIME=?',[data])
+                                for data in range(0,1):
+                                        con = cursor.execute('SELECT * FROM IPDATA WHERE TIME=?',[DATEQ])
                                         rows = con.fetchall()
                                         for row in rows:
                                                 ip_result = {}
@@ -712,31 +702,6 @@ class myHandler(BaseHTTPRequestHandler):
 							'OPEN':row.ALIVE}
 						results_port.append(result_port)
 		'''
-		# Complete this method for type 2 which is IP Subnet type
-		#if self.path == "/
-	 			
-		# Here we will write for another function for port scan instead of host scan
-		#if self.path=="/portscan"  Define complete method
-                        #print "Your name is: %s" % form["IP"].value
-
-                        #self.send_response(200)
-                        #self.end_headers()
-                        #self.wfile.write("Thanks %s %s %s!" % form["IP"].value)
-                        #today = datetime.now()
-                        #print "here1" 
-                        #print "here1" 
-                        #print "here1" 
-                        #cursor.execute('''INSERT INTO IPINFO(IP,BLOCK_IP,PORT,TIME)VALUES(?,?,?,?)''',(form["IP"].value,form["block"].value,form["port"].value,today))
-                        #db.commit()
-                        #cursor.execute("SELECT * FROM IPINFO")
-                        #data = cursor.fetchall()
-                        #print " Data " + str(data)
-                        #print "Before Request"
-                        #from Server import Producer
-                        #request = Request(1,"120.120.120.120",200,10,20)
-                        #Producer(request)
-                        #print "After Producer"
-                        #return
 
 
 try:
