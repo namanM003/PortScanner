@@ -350,6 +350,7 @@ class myHandler(BaseHTTPRequestHandler):
                                  'CONTENT_TYPE':self.headers['Content-Type'],
                         })
 			type_scan = 3
+			self.send_response(200)
 				
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
@@ -365,9 +366,10 @@ class myHandler(BaseHTTPRequestHandler):
 			today = datetime.datetime.now()
 			date_today = datetime.date.today()
 			request = Request(type_scan,internet_protocol,0,int(start_port),int(end_port),random1,today,int(port_scan_mode),date_today)
+                        length = int(end_port) - int(start_port) + 1
 			#request = Request(3,"216.178.46.224",0,79,84,False,today,1)
 			#today = datetime.now()
-			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME,DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
+			cursor.execute('''INSERT INTO IPINFO(IP,TYPE,ALIVE,TIME,DATE1,LENGTH)VALUES(?,?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today,length))
 			db.commit()
 			Producer(request)
 			return
@@ -378,6 +380,7 @@ class myHandler(BaseHTTPRequestHandler):
 				environ={'REQUEST_METHOD':'POST',
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
+			self.send_response(200)
 			today = datetime.datetime.now()
 			date_today = datetime.date.today()
 			############TRY######
@@ -398,20 +401,23 @@ class myHandler(BaseHTTPRequestHandler):
 				
 				type_scan = 1
 				subnet = int(form["subnet"].value)
+                                length = pow(2,32-subnet)
 				internet_protocol = form["IP"].value
 				start_port = 0
 				end_port = 0 
 				request = Request(type_scan, internet_protocol,0,int(start_port),int(end_port), False,today,1,date_today)
 				#random = form["random"].value
-				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
+				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1,LENGTH)VALUES(?,?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today,length))
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
+                                print "Length Calculated " + str(length)
 				return
 			if form["Multi-Host"].value == "true":
 				type_scan = 2
 				internet_protocol = form["IP"].value
 				subnet = int(form["subnet"].value)
+				length = pow(2,32-subnet)
 				start_port = 0
 				end_port = 0
 				random1 = False
@@ -422,10 +428,10 @@ class myHandler(BaseHTTPRequestHandler):
 					random1 = False
 				#random = form["random"].value	#We have still not sending this field value as a parameter in request object
 				request = Request(type_scan, internet_protocol, subnet, int(start_port),int( end_port),random1,today,1,date_today)
-				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1)VALUES(?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today))
+				cursor.execute('''INSERT INTO IPINFO(IP, TYPE, ALIVE, TIME, DATE1,LENGTH)VALUES(?,?,?,?,?,?)''',(form["IP"].value,type_scan,None,today,date_today,length))
 				#db.commit()
 				Producer(request)
-				print "Perfectly Received Request"
+				print "Perfectly Received Request with length = " + str(length)
 				return
 		
 		if self.path == "/results":
@@ -509,6 +515,7 @@ class myHandler(BaseHTTPRequestHandler):
 					rows = con.fetchall()
 					for row in rows:
 						port_result = {}
+                                                port_result["TYPE"] = 3
 						port_result["PORT"] = row[0]
 						port_result["IP"] = row[1]
 						port_result["OPEN"] = row[3]
@@ -544,6 +551,7 @@ class myHandler(BaseHTTPRequestHandler):
                                         rows = con.fetchall()
                                         for row in rows:
                                                 ip_result = {}
+                                                ip_result["TYPE"] = 2
                                                 ip_result["IP"] = row[0]
                                                 ip_result["ALIVE"] = row[1]
                                                 
