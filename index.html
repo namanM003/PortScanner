@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>Bootstrap Example</title>
-    <h1 align="center">SELECT TO SCAN</h1>
+    
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -43,6 +43,10 @@
 
             display:none;
         }
+.tab{
+
+            display:none;
+        }
 
     </style>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
@@ -66,7 +70,12 @@
 
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
-        
+       function myFunction() {
+	    var x = document.getElementById("val");
+	    x.checked = true;
+	    alert(x.value);
+            alert(" Common ");
+        } 
 	function myFunctSub(ip) {
 
            // var range = document.forms["form1"]["text2"].value;
@@ -186,6 +195,11 @@
            return true;
 
         }
+
+
+
+
+
        
 
         $(document).ready(function(){
@@ -211,13 +225,182 @@
                 $(".hostrange").show();
 
             });
+		 $("#Result").click(function(){
+                $(".tab").show();
+                $(".port").hide();
+		$(".host").hide();
+		$(".init").hide();
 
+            });
+
+
+//        });
+
+
+/*First Table created*/
+//$(document).ready(function(){
+
+
+
+    $("#Result").click(function(){
+
+        $.post("/results",
+        {
+          name: $("#tp").val(),
+          city: "Duckburg"
+        },
+        function(data,status){
+          //  var arr = $.parseJSON(data)
+            var out = "<table border='2'> ";
+
+    var i;
+    //alert("tanvi");
+    var val;
+    val="";
+    out += "<tr><td>" +"IP" +"</td><td>" +"Type of Scanning Code" +"</td><td>" +"Time Stamp" +"</td><td>" +"Status" +"</td><td>" +"Select" +"</td></tr>";
+    for(i=0;i < Object.keys(data).length; i++)
+    {
+   strs = data[i].TIME;
+   strs = strs.split(" ");
+   val = data[i].IP+","+data[i].TYPE+","+strs[0]+","+strs[1]+","+data[i].ALIVE+","+data[i].LENGTH;
+        //alert(val);
+    	
+    	if (data[i].TYPE == "1")
+    		type= "Single Host Scan";
+    	if (data[i].TYPE == "2")
+    		type= "Multi-Host Scan";
+    	if (data[i].TYPE == "3")
+    		type= "Port-Scan";
+    	out += "<tr><td>" +
+       	     data[i].IP +
+        	    "</td><td>" +
+        	    type +
+    		"</td><td>" +
+          	  data[i].TIME +
+    	"</td><td>"+
+    	data[i].ALIVE +
+    	"</td><td>" +
+
+    	"<input type='radio' name='val' value="+val+" id='val'>"+ "</td></tr>";
+     
+     
+    }
+    
+        out=out+"</table>";
+        alert("Here Shrey Yo")
+        var dvTable = document.getElementById("dvTable");
+        dvTable.innerHTML = out;
+        
 
         });
+    });
+
+
+    
+
+
+   // dvTable.appendChild(out);
+//});
+//$(document).ready(function(){
+    $("#table32").click(function()
+   {
+    var _result;
+    
+    
+        var o_radio_group = document.getElementsByName("val");
+        for (var a = 0; a < o_radio_group.length; a++) 
+        {
+            if (o_radio_group[a].checked) 
+            {
+
+                _result = o_radio_group[a].value;
+                break;
+            }
+         }
+        alert(_result);
+        $.post("/result2",
+        {
+          name: _result,
+          city: "Duckburg"
+        },
+        function(data,status){
+          //  var arr = $.parseJSON(data)
+            var out=" ";
+
+            var i;
+            var out = "<html><body><table border='1'>";
+            alert(" Came in this function ")
+	    alert(data[0].SCAN)
+            if(data[0].SCAN == 'False') 
+             { 
+               document.write("Scanning in Progress. Go Back to view results");
+               return; 
+             } 
+            if(data[0].TYPE == '3')
+            {
+                   
+out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
+
+                for(i=0;i < Object.keys(data).length; i++)
+                {
+                
+                    if(data[i].OPEN=="NULL")
+                    {
+                        data[i].OPEN="Host Down";
+                    }
+                out += "<tr><td>" +
+                        data[i].IP +
+                         "</td><td>" +
+                          data[i].PORT +
+                    "</td><td>"+
+                    data[i].OPEN +
+                    "</td></tr>";
+                    //out=out+employees[i].firstName + " " + employees[i].lastName+" ";
+
+                }
+                
+                out=out+"</table></body></html>";
+
+                document.write(out);
+            }
+            else
+            {
+                
+                for(i=0;i < Object.keys(data).length; i++)
+                {
+                out= "<tr><td>" +"IP" +"</td><td>" +"Alive"+"</td></tr>";
+                
+                out += "<tr><td>" +
+                        data[i].IP +
+                         "</td><td>" +
+                          data[i].ALIVE +
+                    "</td></tr>";
+                    //out=out+employees[i].firstName + " " + employees[i].lastName+" ";
+
+                }
+                
+                out=out+"</table></body></html>";
+
+                document.write(out);
+
+
+                
+            }
+        });
+        }); 
+});
 
 
 
-    </script>
+
+
+
+
+</script>
+
+
+
+
 </head>
 
 
@@ -225,6 +408,8 @@
 
 <br>
 <br>
+<div class="init">
+<h1 align="center">SELECT TO SCAN</h1>
 <table>
     <col width="300">
     <col width="500">
@@ -239,65 +424,26 @@
     </td>
 </tr>
 <tr><td></td><td>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script>
-$(document).ready(function(){
-    $("#Result").click(function(){
-        $.post("/results",
-        {
-          name: $("#tp").val(),
-          city: "Duckburg"
-        },
-        function(data,status){
-          //  var arr = $.parseJSON(data)
-            var out=" ";
-alert("HERE ");
-var i;
-var out = "<html><body><form name='form3' action='/result2' method='post' ><table border='1'>";
-var val;
-for(i=0;i < Object.keys(data).length; i++)
-{strs = data[i].TIME
- strs = strs.split(" ");
-val=data[i].IP+","+data[i].TYPE+","+strs[0]+","+strs[1]+","+data[i].ALIVE+","+data[i].LENGTH;
-type= "";
-if (data[i].TYPE == "1")
-	type= "Single Host Scan";
-if (data[i].TYPE == "2")
-	type= "Multi-Host Scan";
-if (data[i].TYPE == "3")
-	type= "Port-Scan";
-out += "<tr><td>" +
-        data[i].IP +
-        "</td><td>" +
-        type +
-"</td><td>" +
-        data[i].TIME +
-"</td><td>"+
-data[i].ALIVE +
-"</td><td>" +
 
-"<input type='radio' name='val' value="+val+">"+ "</td></tr>";
-//out=out+employees[i].firstName + " " + employees[i].lastName+" ";
-
-}
-    
-out=out+"</table><input type='submit' name='submit' value='Submit'/></form></body></html>";
-
-document.write(out);
-        });
-    });
-});
-</script>
-<input type="date" id="tp" >
+<input type="date" id="tp">
 <button id="Result">All Results</button>
     
    
 </td></tr>
 </table>
+</div>
 <br>
 <br>
 
+<div id="dvTable" class="tab">
+<h1 align="center">RESULT</h1>
+<p>here</p>
+</div>
 
+<div id="more_result" class="more_result">
+<button id="table32" >More Results</button>
+
+</div>
 <div class="host">
     <hr>
     <h3 align="center">Enter the details:</h3><br>

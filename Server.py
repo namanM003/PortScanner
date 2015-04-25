@@ -470,8 +470,8 @@ class myHandler(BaseHTTPRequestHandler):
                         })
                         self.send_response(200)
                         self.send_header('Content-Type','application/json')
-			print form["val"]
-			sup = str(form["val"])
+			print form["name"]
+			sup = str(form["name"])
 			string = sup.split(",")
 			#print form["val"][1]
 			for stri in string:
@@ -511,16 +511,24 @@ class myHandler(BaseHTTPRequestHandler):
 				for data in range(0,1):
 					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,DATEQ))
 					rows = con.fetchall()
+                                        scan = True
 					if len(rows) == int(LENGTH):
-						print "TRUE"
+						print "TRUi"
+                                                scan = True
 					else:
 						print "FALSE"
+                                                scan = False
+					if len(rows) == 0:
+						port_result = {}
+						port_result["SCAN"] = False
+						port_results.append(port_result)
 					for row in rows:
 						port_result = {}
                                                 port_result["TYPE"] = 3
 						port_result["PORT"] = row[0]
 						port_result["IP"] = row[1]
 						port_result["OPEN"] = row[3]
+                                                port_result["SCAN"] = scan
 						print port_result["PORT"]
 						print port_result["IP"]
 						print port_result["OPEN"]
@@ -552,12 +560,24 @@ class myHandler(BaseHTTPRequestHandler):
                                 for data in range(0,1):
                                         con = cursor.execute('SELECT * FROM IPDATA WHERE TIME=?',[DATEQ])
                                         rows = con.fetchall()
+                                        scan = True
+                                        if len(rows) == int(LENGTH):
+                                                print "TRUi"
+                                                scan = True
+                                        else:
+                                                print "FALSE"
+                                                scan = False
+                                        if len(rows) == 0:
+						ip_result = {}
+                                                ip_result["SCAN"] = False
+                                                ip_results.append(ip_result)
+
                                         for row in rows:
                                                 ip_result = {}
                                                 ip_result["TYPE"] = 2
                                                 ip_result["IP"] = row[0]
                                                 ip_result["ALIVE"] = row[1]
-                                                
+                                                ip_result["SCAN"]  = scan                                             
                                                 print ip_result["ALIVE"]
                                                 print ip_result["IP"]
                                                 #print ip_result["OPEN"]
