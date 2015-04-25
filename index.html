@@ -258,7 +258,7 @@ var val;
 for(i=0;i < Object.keys(data).length; i++)
 {strs = data[i].TIME
  strs = strs.split(" ");
-val=data[i].IP+","+data[i].TYPE+","+strs[0]+","+strs[1]+","+data[i].ALIVE;
+val=data[i].IP+","+data[i].TYPE+","+strs[0]+","+strs[1]+","+data[i].ALIVE+","+data[i].LENGTH;
 type= "";
 if (data[i].TYPE == "1")
 	type= "Single Host Scan";

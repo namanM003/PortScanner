@@ -453,7 +453,8 @@ class myHandler(BaseHTTPRequestHandler):
 				result_host["TIME"] = row[3]
 				result_host["DATE1"] = row[4]
 				result_host["TYPE"] = row[1]
-				print result_host["IP"]
+				result_host["LENGTH"] = row[5]
+				#print result_host["IP"]
 				results_host.append(result_host)
 			json_data = json.dumps(results_host)
 			self.end_headers()
@@ -483,6 +484,9 @@ class myHandler(BaseHTTPRequestHandler):
 			print DATEQ
 			TYPE = int(string[2])
 			print TYPE
+			LENGTH = string[6].split("'")
+			LENGTH = LENGTH[0]
+			print LENGTH
 			#############QUERY FOR SPECIFIC DATA RESULT##########
 			if TYPE==3:
 				'''
@@ -507,6 +511,10 @@ class myHandler(BaseHTTPRequestHandler):
 				for data in range(0,1):
 					con = cursor.execute('SELECT * FROM PORTDATA WHERE IP=? AND TIME=?',(IP,DATEQ))
 					rows = con.fetchall()
+					if len(rows) == int(LENGTH):
+						print "TRUE"
+					else:
+						print "FALSE"
 					for row in rows:
 						port_result = {}
                                                 port_result["TYPE"] = 3
