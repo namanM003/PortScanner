@@ -419,6 +419,7 @@ class myHandler(BaseHTTPRequestHandler):
 				return
 		
 		if self.path == "/results":
+                        print "Coming here"
 			form = cgi.FieldStorage(
 				fp = self.rfile,
 				headers = self.headers,
@@ -427,7 +428,7 @@ class myHandler(BaseHTTPRequestHandler):
 			})
 			self.send_response(200)
 			self.send_header('Content-Type','application/json')
-			con = cursor.execute("SELECT * FROM IPINFO")
+			con = cursor.execute("SELECT * FROM IPINFO ORDER BY TIME DESC")
 			rows = con.fetchall()
 			results_host = []
 			valid = False
@@ -440,7 +441,7 @@ class myHandler(BaseHTTPRequestHandler):
 			except:
 				valid = False
 			if valid:
-				con = cursor.execute('SELECT * FROM IPINFO WHERE DATE1=?',(date))
+				con = cursor.execute('SELECT * FROM IPINFO WHERE DATE1=? ORDER BY TIME DESC',[date])
 				rows = con.fetchall()
 			#print form["name"]
 			#result_host = {}	
