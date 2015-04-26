@@ -281,7 +281,12 @@ class myHandler(BaseHTTPRequestHandler):
                         self.path="/index.html"
 		if self.path=="/?":
 			self.path="/index.html"
-
+		if self.path== "/\\":
+			self.path="/index.html"
+		if self.path == "/\\index.html?":
+			self.path = "/index.html"
+		if self.path == "/index.html?":
+			self.path = "/index.html"
                 try:
                         #Check the file extension required and
                         #set the right mime type
@@ -333,8 +338,16 @@ class myHandler(BaseHTTPRequestHandler):
                         })
 			type_scan = 3
 			self.send_response(200)
+                        self.send_header('Content-type','text/html')
                         self.end_headers()
-                        self.wfile.write("Please Go to Home Page to View Results")
+                        self.path = "/index.html"
+                        mimetype = 'text/html'
+                        f = open(curdir + sep + self.path)
+                        #self.send_response(200)
+                        #self.send_header('Content-type',mimetype)
+                        #self.end_headers()
+                        self.wfile.write(f.read())
+			f.close()
 				
 			internet_protocol = form["IP"].value
 			start_port = form["start"].value
@@ -365,8 +378,17 @@ class myHandler(BaseHTTPRequestHandler):
 				 'CONTENT_TYPE':self.headers['Content-Type'],
 			})
 			self.send_response(200)
+                        self.send_header('Content-type','text/html')
                         self.end_headers()
-                        self.wfile.write("Please Go to Home Page to View Results")
+                        self.path = "/index.html"
+                        mimetype = 'text/html'
+                        f = open(curdir + sep + self.path)
+			
+                        #self.send_response(200)
+                        #self.send_header('Content-type',mimetype)
+                        #self.end_headers()
+                        self.wfile.write(f.read())
+			f.close()
 			today = datetime.datetime.now()
 			date_today = datetime.date.today()
 			############TRY######
