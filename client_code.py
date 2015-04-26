@@ -12,6 +12,7 @@ from threading import Thread, Lock
 from threading import Condition
 import time
 import random
+import sys
 
 queue = []
 lock = Lock()
@@ -96,7 +97,7 @@ def server_send(response):
 def client_listen():                                         ### As well as producer code here
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
-    client_address = ('localhost', 10005)
+    client_address = ('localhost', int(sys.argv[1]))
     print >>sys.stderr, 'starting up on %s port %s' % client_address
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(client_address)
@@ -132,7 +133,7 @@ def client_listen():                                         ### As well as prod
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_address = ('localhost', 10005)
+client_address = ('localhost', int(sys.argv[1]))
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind(client_address)
 # Connect the socket to the port where the server is listening
