@@ -138,16 +138,12 @@ def send_client(client_address, request,start, end, ip_list):
 		ip = []
 		for i in range(start, end + 1):
 			ip.append(ip_list[i])
-		if request.random == True:
-			shuffle(ip)
                         print " GOT RANDOM REQUEST "
 		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode,request.date_only)
 	if request.type == 3:
 		port_list = []
 		for i in range(start,end+1):
-			port_list.append(i)
-		if request.random == True:
-			shuffle(port_list)
+			port_list.append(ip_list[i])
                         print " GOT RANDOM REQUEST "
        		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode,request.date_only)
         data_string = pickle.dumps(client_request, -1)
@@ -181,9 +177,11 @@ class ConsumerThread(Thread):
 		total_list = list()
 		for ip in IPNetwork(ip_with_subnet):
    			total_list.append(str(ip))
+		if request.random == True:
+			shuffle(total_list)
 		length = len(clients)
 		no_of_ips = len(total_list)
-		ips = no_of_ips/length
+		ips = int(math.ceil(no_of_ips/float(length)))
 		start = 0
 		end = start + ips - 1
 		i = 0
@@ -198,20 +196,25 @@ class ConsumerThread(Thread):
 			start = end + 1
 			end = start + ips -1
             if request.type == 3:
+		port_list = []
                 no_of_ports = request.port_end - request.port_start + 1
+		for p in no_of_ports :
+			port_list.append(p + request.port_start)
+		if request.random == True:
+			shuffle(port_list)
                 length = len(clients)
                 ports = int(math.ceil(no_of_ports/float(length)))
                 print "Ports " + str(ports)
-                start = request.port_start
+                start = 0
                 end = start + ports - 1
                 i = 0
                 while True:
                     if (end >=  request.port_end):
                         if (start <= request.port_end):
-                            send_client(clients[i], request, start, request.port_end,None)
+                            send_client(clients[i], request, start, len(port_list)-1,port_list)
                         break
                     else :
-                        send_client(clients[i], request, start, end,None)
+                        send_client(clients[i], request, start, end, port_list)
                         i = (i + 1)%length
                         start = end + 1
                         end = start + ports - 1
