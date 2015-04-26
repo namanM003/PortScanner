@@ -142,7 +142,8 @@ def send_client(client_address, request,start, end, ip_list):
 		for i in range(start, end + 1):
 			ip.append(ip_list[i])
 		if request.random == True:
-			shuffle(ip_list)
+			shuffle(ip)
+                        print " GOT RANDOM REQUEST "
 		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode,request.date_only)
 	if request.type == 3:
 		port_list = []
@@ -150,6 +151,7 @@ def send_client(client_address, request,start, end, ip_list):
 			port_list.append(i)
 		if request.random == True:
 			shuffle(port_list)
+                        print " GOT RANDOM REQUEST "
        		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode,request.date_only)
         data_string = pickle.dumps(client_request, -1)
 	print 'sending' + str(client_request.type) + ' to ' , client_address
@@ -432,15 +434,19 @@ class myHandler(BaseHTTPRequestHandler):
 			rows = con.fetchall()
 			results_host = []
 			valid = False
-			try:
-				date = form["name"]
-				date = date.split(",")
-				date = date[1].strip("'")
-				print form["name"]
+		        try:	
+                                print " here with " + str(form["name"])
+     				date = str(form["name"])
+	               		date = date.split(",")
+		        	date = date[1].strip("'")
+                                date = date.strip(")")
+				date = date[2:]
+                                date = date.strip("'")
 				valid = True
-			except:
-				valid = False
+		        except:
+                                valid = False
 			if valid:
+                                print " Got date " + str(date)
 				con = cursor.execute('SELECT * FROM IPINFO WHERE DATE1=? ORDER BY TIME DESC',[date])
 				rows = con.fetchall()
 			#print form["name"]

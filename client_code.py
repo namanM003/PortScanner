@@ -19,8 +19,11 @@ lock = Lock()
 condition = Condition()
 
 def scan_ip(port_list):
+
  response = dict()
  for i in range(0,len(port_list)):
+
+      print " Pinging for IP " + str(port_list[i])
       if(True == is_up(port_list[i])):
           response[port_list[i]] = True
       else:
@@ -29,9 +32,9 @@ def scan_ip(port_list):
 
 class ConsumerThread(Thread):
     def run(self):
-        dict_response = dict()
         global queue
         while True:
+            dict_response = dict()
             condition.acquire()
             if not queue:
                 print "Nothing in queue, consumer is waiting"
@@ -70,6 +73,7 @@ class ConsumerThread(Thread):
             else:
                  print "GOT WRONG PACKET"                 
             resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response,request.date_only)
+            print "Returning to Server " + str(dict_response)
             print "Sending to the server"
             server_send(resp)            
             
