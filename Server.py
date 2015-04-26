@@ -31,18 +31,15 @@ response_queue = []
 condition = Condition()
 condition_response = Condition()
 
-logger = None
-
-def InitializeLogger(Name): 
-    logger = logging.getLogger(Name) 
-    hdlr = logging.FileHandler(Name + '.log') 
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') 
-    hdlr.setFormatter(formatter) 
-    logger.addHandler(hdlr) 
-    logger.setLevel(logging.INFO)
+Name      = str(os.getpid())
+logger = logging.getLogger(Name) 
+hdlr = logging.FileHandler(Name + '.log') 
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') 
+hdlr.setFormatter(formatter) 
+logger.addHandler(hdlr) 
+logger.setLevel(logging.INFO)
 
 def add_client():
-    global logger
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     server_address = ('localhost', 10000)
@@ -753,8 +750,7 @@ class myHandler(BaseHTTPRequestHandler):
 try:
         #Create a web server and define the handler to manage the
         #incoming request
-	InitializeLogger(str(os.getpid()))
-
+        logger.info(" Starting Server ")
         server = HTTPServer(('', PORT_NUMBER), myHandler)
         print 'Started httpserver on port ' , PORT_NUMBER
 	thread.start_new_thread(add_client, () )
