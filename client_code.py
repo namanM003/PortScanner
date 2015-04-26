@@ -45,22 +45,21 @@ class ConsumerThread(Thread):
             condition.release()
             print >>sys.stderr, 'received "%s"' % request.ip_addr
             if  request.type == 1:                                   
-                print " In request type 1"
+                print " Single Host Scanning Mode Requested "
                 print " For scanning IP " + str(request.ip_addr)
                 if(True == is_up(request.ip_addr)):
                    dict_response[request.ip_addr] = True
                 else:
                   dict_response[request.ip_addr]  = False
             elif request.type == 2:
-                print "In request type 2 "
+                print " Multiple Host Scanning Mode Requested "
                 dict_response = scan_ip(request.port_list)
 
             elif request.type == 3:                                          ### For port scanning 
-                 print " In request type 3 "
+                 print " Port Scanning Mode Requested "
                  if request.port_scanning_mode == 1:
                     print "Requested SYN mode"
                     dict_response=scan_port_ack(request.port_list,request.ip_addr)  ### Add modes
-                    print "got response " + str(dict_response)
                  elif request.port_scanning_mode == 2:
                     print "Requested Full connect "
                     dict_response=scan_port_connect(request.port_list,request.ip_addr)

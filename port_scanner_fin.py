@@ -14,7 +14,7 @@ open_ports = []
  
 def is_up(ip):
     """ Tests if host is up """
-    return True
+    
     icmp = IP(dst=ip)/ICMP()
     resp = sr1(icmp, timeout=10)
     if resp == None:

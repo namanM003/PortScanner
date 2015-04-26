@@ -16,7 +16,7 @@ import cgi
 import sqlite3
 import json
 import datetime
-
+import math
 
 PORT_NUMBER = 8070
 db = sqlite3.connect('portdb', check_same_thread=False)
@@ -118,11 +118,8 @@ def broadcast_message():
             sock.connect(client_address)
             try:
                 # Send data
-                print "here1"
                 request = Request(1,"120.120.120.120",200,10,20)
-                print "here2"
                 data_string = pickle.dumps(request, -1)
-                print "here3" 
                 #print data_string            
                 #print >>sys.stderr, 'sending "%s"' % data_string
                 sock.sendall(data_string)
@@ -203,7 +200,8 @@ class ConsumerThread(Thread):
             if request.type == 3:
                 no_of_ports = request.port_end - request.port_start + 1
                 length = len(clients)
-                ports = no_of_ports/length
+                ports = int(math.ceil(no_of_ports/float(length)))
+                print "Ports " + str(ports)
                 start = request.port_start
                 end = start + ports - 1
                 i = 0
@@ -281,6 +279,8 @@ class myHandler(BaseHTTPRequestHandler):
         def do_GET(self):
                 if self.path=="/":
                         self.path="/index.html"
+		if self.path=="/?":
+			self.path="/index.html"
 
                 try:
                         #Check the file extension required and
@@ -380,8 +380,6 @@ class myHandler(BaseHTTPRequestHandler):
 			self.end_headers()
 			'''
 			###########1###########
-			print "Reached Host Function"
-			print form["Multi-Host"].value
 			if form["Multi-Host"].value == "false":
 			#IN UI GIVE THIS FUNCTIONALITY OF MULTI_HOST This value should come from UI by checking IP
 				
@@ -397,7 +395,6 @@ class myHandler(BaseHTTPRequestHandler):
 				db.commit()
 				Producer(request)
 				print "Perfectly Received Request"
-                                print "Length Calculated " + str(length)
 				return
 			if form["Multi-Host"].value == "true":
 				type_scan = 2
@@ -421,7 +418,6 @@ class myHandler(BaseHTTPRequestHandler):
 				return
 		
 		if self.path == "/results":
-                        print "Coming here"
 			form = cgi.FieldStorage(
 				fp = self.rfile,
 				headers = self.headers,
@@ -435,7 +431,6 @@ class myHandler(BaseHTTPRequestHandler):
 			results_host = []
 			valid = False
 		        try:	
-                                print " here with " + str(form["name"])
      				date = str(form["name"])
 	               		date = date.split(",")
 		        	date = date[1].strip("'")
@@ -446,7 +441,6 @@ class myHandler(BaseHTTPRequestHandler):
 		        except:
                                 valid = False
 			if valid:
-                                print " Got date " + str(date)
 				con = cursor.execute('SELECT * FROM IPINFO WHERE DATE1=? ORDER BY TIME DESC',[date])
 				rows = con.fetchall()
 			#print form["name"]
@@ -477,26 +471,19 @@ class myHandler(BaseHTTPRequestHandler):
                         })
                         self.send_response(200)
                         self.send_header('Content-Type','application/json')
-			print form["name"]
 			sup = str(form["name"])
 			string = sup.split(",")
                  
-			for stri in string:
-				print stri
 			IP = string[1].split("'")
 			IP = IP[1]
 		        if (IP == "Empty"):
                           print "Empty table"
                           return 
-                   	print IP
 			DATEQ = string[3]+" "+string[4]
 			#DATE_Q = DATE_Q[0]
-			print DATEQ
 			TYPE = int(string[2])
-			print TYPE
 			LENGTH = string[6].split("'")
 			LENGTH = LENGTH[0]
-			print LENGTH
 			#############QUERY FOR SPECIFIC DATA RESULT##########
 			if TYPE==3:
 				'''
@@ -523,10 +510,8 @@ class myHandler(BaseHTTPRequestHandler):
 					rows = con.fetchall()
                                         scan = 1
 					if len(rows) == int(LENGTH):
-						print "TRUi"
                                                 scan = 1
 					else:
-						print "FALSE"
                                                 scan = 0
 					if len(rows) == 0:
 						port_result = {}
@@ -539,11 +524,9 @@ class myHandler(BaseHTTPRequestHandler):
 						port_result["IP"] = row[1]
 						port_result["OPEN"] = row[3]
                                                 port_result["SCAN"] = scan
-						print port_result["PORT"]
-						print port_result["IP"]
-						print port_result["OPEN"]
 						port_results.append(port_result)
-						
+
+				print " Sending Back to Client " + str(port_results)		
         	                json_data = json.dumps(port_results)
                 	        self.end_headers()
                         	self.wfile.write(json_data)
@@ -592,7 +575,7 @@ class myHandler(BaseHTTPRequestHandler):
                                                 print ip_result["IP"]
                                                 #print ip_result["OPEN"]
                                                 ip_results.append(ip_result)
-
+                                print "Sending back to client " + str(ip_results)
                                 json_data = json.dumps(ip_results)
                                 self.end_headers()
                                 self.wfile.write(json_data)

@@ -6,7 +6,8 @@ import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR) # Disable the annoying No Route found warning !  
 from scapy.all import *
 #ip = "216.178.46.224"
-ip = "74.125.141.106"
+#ip = "74.125.141.106"
+ip = "31.13.71.1"
 def is_up(ip):
     """ Tests if host is up """
     icmp = IP(dst=ip)/ICMP()
@@ -15,6 +16,18 @@ def is_up(ip):
         return False
     else:
         return True
+
+def grab(conn):
+ try:
+  conn.send('Hi\n')
+  ret = conn.recv(4096*2)
+  print '#####  BANNER #####' 
+  print str(ret)
+  print '##### BANNER #####'
+  return
+ except Exception, e:
+  print ' Didnt get any banner: ' + str(e)
+  return
 
 def scan_port_connect(port_list,ip):
        	 open_close_dict = dict()
@@ -31,6 +44,7 @@ def scan_port_connect(port_list,ip):
 			if result == 0:
 			    print "Port " + str(port) +" is Open"
 		            open_close_dict[port] = True
+                            grab(sock)
 			else :
 			    print "Port " + str(port) +" is Closed"
 		            open_close_dict[port] = False
@@ -45,7 +59,7 @@ def scan_port_connect(port_list,ip):
               print "Host %s is down " % ip
          return open_close_dict
 
-#resp = scan_port_connect([1,2,3],ip)
+#resp = scan_port_connect([22,80,443],ip)
 #print "Ports :  " + str(resp)
 
 	

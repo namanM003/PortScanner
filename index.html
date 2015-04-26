@@ -369,9 +369,12 @@ out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
 
                 }
                 
-                out=out+"</table></body></html>";
+                out=out+"</table></form></body></html>";
+		var v = window.open()
+		v.document.open()
 
-                document.write(out);
+                v.document.write(out);
+		v.document.close();
             }
             else
             {
@@ -394,8 +397,11 @@ out+= "<tr><td>" +"IP" +"</td><td>" +"Port" +"</td><td>" +"Open" +"</td></tr>";
                 }
                 
                 out=out+"</table></body></html>";
+		var w = window.open();
+		w.document.open();
 
-                document.write(out);
+                w.document.write(out);
+		w.document.close();
 
 
                 
@@ -468,8 +474,10 @@ ENTER DATE:    <input type="date" id="tp">
 <div id="dvTable" class="tab"></div>
 <br><br><br>
 <div style="position: absolute;left: 1000px;" id='more_result' class='more_result'>
-<form action='http://127.0.0.1:8070'>
-<input type='submit' value='Go to home page'>
+<form name="zorro" action='\' method='get'>
+<input type='submit' value='Go to home page'></input></form>
+<form name='bhai' action='\results' method='post'>
+<input type='submit' value="View all results"></input></form>
 </form>
 </div>
 <div style="position: absolute;left: 200px;" id='go_back' class='go_back'>
