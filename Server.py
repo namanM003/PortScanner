@@ -31,7 +31,7 @@ response_queue = []
 condition = Condition()
 condition_response = Condition()
 
-Name      = str(os.getpid())
+Name      = str("Server_ " + os.getpid())
 logger = logging.getLogger(Name) 
 hdlr = logging.FileHandler(Name + '.log') 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s') 
@@ -53,7 +53,7 @@ def add_client():
         print >>sys.stderr, 'waiting for a connection'
         connection, client_address = sock.accept()
         clients.append(client_address)
-	#logger.info("New Client added : " + str(client_address))
+	logger.info("New Client added : " + str(client_address))
         
         try:
             print >>sys.stderr, 'connection from', client_address
@@ -87,7 +87,7 @@ def client_listen():
     while True:
         # Wait for a connection
         print >>sys.stderr, 'waiting for a connection'
-	#logger.info("Waiting for response from clients")
+	logger.info("Waiting for response from clients")
         connection, client_address = sock1.accept()
         try:
             print >>sys.stderr, 'connection from', client_address
@@ -97,7 +97,7 @@ def client_listen():
 	    response = pickle.loads(data)
 	    print >>sys.stderr, 'received "%s"' % response.result_dict
             print " Got Response " + str(response.result_dict)
-	    #logger.info("Got response " + str(response.ip_addr) + ":" + str(response.date_today))
+	    logger.info("Got response " + str(response.ip_addr) + ":" + str(response.date_today))
 	    ProducerResponse(response);
                 
         finally:
@@ -125,32 +125,42 @@ def broadcast_message():
                 sock.close()
 
 def send_client(client_address, request,start, end, ip_list):
-    global logger
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(client_address)
 	if request.type == 1:
-		client_request = ClientRequest(request.type, request.ip_addr,0,0,0,0,request.date_today,request.port_scanning_mode,request.date_only)	
+		client_request = ClientRequest(request.type, request.ip_addr,0,0,0,0,request.date_today,request.port_scanning_mode,request.date_only)
+                	
 	if request.type == 2:
 		ip = []
 		for i in range(start, end + 1):
 			ip.append(ip_list[i])
-                        print " GOT RANDOM REQUEST "
 		client_request = ClientRequest(request.type, request.ip_addr, request.ip_subnet, start,end,ip,request.date_today,request.port_scanning_mode,request.date_only)
+                logger.info(" The list of IP's to be scanned " )
+                logger.info( str(ip) )
+
 	if request.type == 3:
 		port_list = []
 		for i in range(start,end+1):
 			port_list.append(ip_list[i])
-                        print " GOT RANDOM REQUEST "
        		client_request = ClientRequest(request.type,request.ip_addr,0,start,end, port_list, request.date_today,request.port_scanning_mode,request.date_only)
+                logger.info(" The List of Ports to be Scanned ")
+                logger.info( str(port_list) )
         data_string = pickle.dumps(client_request, -1)
 	print 'sending' + str(client_request.type) + ' to ' , client_address
-	#logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
+	logger.info("Sending request to client : "+str(client_address)+" : " + str(request.ip_addr) + ":" + str(request.date_today))
 	sock.sendall(data_string)
     finally:
         print >>sys.stderr, 'closing socket'
         sock.close()
         
+def get_type(req_type):
+    if(req_type == '1'):
+       return "SINGLLE HOST SCAN"
+    elif(req_type == '2'):
+       return "MULTI HOST SCAN"
+    else:
+      return " PORT SCAN "
 
 class ConsumerThread(Thread):
     global logger
@@ -166,6 +176,7 @@ class ConsumerThread(Thread):
 		#logger.info("Producer added something to queue and notifies the consumer")
             request = queue.pop(0)
             print "Consumed", request.ip_addr , request.type
+            logger.info(" Request from UI with IP = " + str(request.ip_addr) + " Type = " + get_type(request.type))
 	    #logger.info("Consumed :" + str(request.ip_addr) + ":" + str(request.date_today))
 	    if request.type == 1:
 		send_client(clients[0], request, 0, 0, None)
@@ -176,6 +187,7 @@ class ConsumerThread(Thread):
    			total_list.append(str(ip))
 		if request.random == True:
 			shuffle(total_list)
+                        logger.info(" Random enabled ")
 		length = len(clients)
 		no_of_ips = len(total_list)
 		ips = int(math.ceil(no_of_ips/float(length)))
@@ -194,11 +206,12 @@ class ConsumerThread(Thread):
 			end = start + ips -1
             if request.type == 3:
 		port_list = []
-                no_of_ports = request.port_end - request.port_start + 1
-		for p in no_of_ports :
+                no_of_ports = int(request.port_end) - int(request.port_start) + 1
+		for p in range(0,no_of_ports) :
 			port_list.append(p + request.port_start)
 		if request.random == True:
 			shuffle(port_list)
+                        logger.info(" Random enabled ")
                 length = len(clients)
                 ports = int(math.ceil(no_of_ports/float(length)))
                 print "Ports " + str(ports)
@@ -206,8 +219,8 @@ class ConsumerThread(Thread):
                 end = start + ports - 1
                 i = 0
                 while True:
-                    if (end >=  request.port_end):
-                        if (start <= request.port_end):
+                    if (end >=  len(port_list)-1):
+                        if (start <= len(port_list)-1):
                             send_client(clients[i], request, start, len(port_list)-1,port_list)
                         break
                     else :
@@ -239,7 +252,9 @@ class ConsumerResponseThread(Thread):
                 condition_response.wait()
                 print "Producer added something to queue and notified the consumer"
             response = response_queue.pop(0)
-            print "Consumed_Response Thred", response.ip_addr , response.type, str(response.result_dict)
+            print "Consumed_Response Thread", response.ip_addr , response.type, str(response.result_dict)
+            logger.info( " Got Reponse back from client for type = " + get_type(str(response.type)))
+            logger.info( " Results " + str(response.result_dict))
             if response.type == 1:
                 print " In type 1 "
 		for k,v in response.result_dict.items():

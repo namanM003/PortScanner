@@ -20,7 +20,7 @@ def is_up(ip):
     else:
         return True
  
-def scan_port_ack(port_list,ip):
+def scan_port_ack(port_list,ip,logger):
     conf.verb = 0 # Disable verbose in sr(), sr1() methods
     start_time = time.time()
     closed = 0
@@ -28,6 +28,7 @@ def scan_port_ack(port_list,ip):
     open_dict = []
     if is_up(ip):
       print "Host %s is up, start scanning" % ip
+      logger.info("Host %s is up, start scanning" % ip)
       for port in port_list:
             src_port = RandShort() # Getting a random port as source port
             p = IP(dst=ip)/TCP(sport=src_port, dport=port, flags='S') # Forging SYN packet
@@ -36,13 +37,15 @@ def scan_port_ack(port_list,ip):
                 closed += 1
                 dict_response[port] = False
                 print " Port is closed " + str(port)
+                logger.info(" Port is closed " + str(port))
             elif resp.haslayer(TCP):
                 if resp.getlayer(TCP).flags == 0x12:
                     send_rst = sr(IP(dst=ip)/TCP(sport=src_port, dport=port, flags='AR'), timeout=1)
                     dict_response[port] = True
+                    logger.info(" Port is open " + str(port))
                 elif resp.getlayer(TCP).flags == 0x14:
                     print " Here for port " + str(port)
-                    closed += 1
+                    logger.info(" Port is closed " + str(port))
                     dict_response[port] = False
                 else:
                     print " Came here " + str(port) 
@@ -51,7 +54,10 @@ def scan_port_ack(port_list,ip):
       print "%s Scan Completed in %fs" % (ip, duration)
       print "Scan Complete : for the ports with results" + str(dict_response)
     else:
+        for port in port_list:
+                dict_response[port] = "HostDown"
         print "Host %s is Down" % ip
+        logger.info("Host %s is Down" % ip)
        
     return dict_response            
 #resp = scan_port_ack([1,2,3,80,82,83,443],ip)

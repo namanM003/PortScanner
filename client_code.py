@@ -12,19 +12,28 @@ from threading import Thread, Lock
 from threading import Condition
 import time
 import random
-import sys
-
+import os
+import logging
 queue = []
 lock = Lock()
 
 condition = Condition()
+
+Name      = "Client_" + str(os.getpid())
+logger = logging.getLogger(Name)
+hdlr = logging.FileHandler(Name + '.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
+
 
 def scan_ip(port_list):
 
  response = dict()
  for i in range(0,len(port_list)):
 
-      print " Pinging for IP " + str(port_list[i])
+      logger.info(" Pinging for IP " + str(port_list[i]))
       if(True == is_up(port_list[i])):
           response[port_list[i]] = True
       else:
@@ -43,37 +52,38 @@ class ConsumerThread(Thread):
                 print "Producer added something to queue and notified the consumer"
             request = queue.pop(0)
             print "Consumed" + str (request.ip_addr)
+            logger.info(" Got Request from Server IP = " + str(request.ip_addr) + " Type = " + str(request.type))
             condition.release()
             print >>sys.stderr, 'received "%s"' % request.ip_addr
             if  request.type == 1:                                   
-                print " Single Host Scanning Mode Requested "
+                logger.info (" Single Host Scanning Mode Requested ")
                 print " For scanning IP " + str(request.ip_addr)
                 if(True == is_up(request.ip_addr)):
                    dict_response[request.ip_addr] = True
                 else:
                   dict_response[request.ip_addr]  = False
             elif request.type == 2:
-                print " Multiple Host Scanning Mode Requested "
+                logger.info(" Multiple Host Scanning Mode Requested ")
                 dict_response = scan_ip(request.port_list)
 
             elif request.type == 3:                                          ### For port scanning 
-                 print " Port Scanning Mode Requested "
+                 logger.info(" Port Scanning Mode Requested ")
                  if request.port_scanning_mode == 1:
-                    print "Requested SYN mode"
-                    dict_response=scan_port_ack(request.port_list,request.ip_addr)  ### Add modes
+                    logger.info("Requested SYN mode")
+                    dict_response=scan_port_ack(request.port_list,request.ip_addr,logger)  ### Add modes
                  elif request.port_scanning_mode == 2:
-                    print "Requested Full connect "
-                    dict_response=scan_port_connect(request.port_list,request.ip_addr)
+                    logger.info("Requested Full connect ")
+                    dict_response=scan_port_connect(request.port_list,request.ip_addr,logger)
                  elif request.port_scanning_mode == 3:
-                    print " Requested Fin mode "
-                    dict_response=scan_port_fin(request.port_list,request.ip_addr)    ##change this to Fin
+                    logger.info(" Requested Fin mode ")
+                    dict_response=scan_port_fin(request.port_list,request.ip_addr,logger)    ##change this to Fin
                  else :
                      print "Scanning mode invalid"
                  
             else:
-                 print "GOT WRONG PACKET"                 
+                 logger.info( "GOT WRONG PACKET")
             resp = Response(request.type,request.ip_addr,request.ip_subnet,request.port_start,request.port_end,request.port_list,request.date_today,dict_response,request.date_only)
-            print "Returning to Server " + str(dict_response)
+            logger.info( "Sending Results back to Server " + str(dict_response))
             print "Sending to the server"
             server_send(resp)            
             
@@ -144,6 +154,7 @@ sock.connect(server_address)
 try:
     
     # Send data
+    logger.info(" Client Starting ") 
     message = 'This is the message.  It will be repeated.'
     print >>sys.stderr, 'sending "%s"' % message
     sock.sendall(message)

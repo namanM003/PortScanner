@@ -17,23 +17,27 @@ def is_up(ip):
     else:
         return True
 
-def grab(conn):
+def grab(conn,logger):
  try:
   conn.send('Hi\n')
   ret = conn.recv(4096*2)
   print '#####  BANNER #####' 
+  logger.info(" ### BANNER #### ")
   print str(ret)
+  logger.info(str(ret))
+  logger.info(" ### BANNER #### ")
   print '##### BANNER #####'
   return
  except Exception, e:
   print ' Didnt get any banner: ' + str(e)
+  logger.info(" Didn't get any banner ")
   return
 
-def scan_port_connect(port_list,ip):
+def scan_port_connect(port_list,ip,logger):
        	 open_close_dict = dict()
          if is_up(ip):
 	    print "Host %s is up, start scanning" % ip
-            
+            logger.info("Host %s is up, start scanning" % ip)            
 	    try: 
 	 	    for port in port_list:
 		
@@ -43,10 +47,12 @@ def scan_port_connect(port_list,ip):
 
 			if result == 0:
 			    print "Port " + str(port) +" is Open"
+                            logger.info("Port " + str(port) +" is Open")
 		            open_close_dict[port] = True
-                            grab(sock)
+                            grab(sock,logger)
 			else :
 			    print "Port " + str(port) +" is Closed"
+                            logger.info("Port " + str(port) +" is Closed")
 		            open_close_dict[port] = False
 		 	sock.close()
             except:
@@ -57,6 +63,7 @@ def scan_port_connect(port_list,ip):
               for port in port_list:
                 open_close_dict[port] = "HostDown"
               print "Host %s is down " % ip
+              logger.info("Host %s is down " % ip)
          return open_close_dict
 
 #resp = scan_port_connect([22,80,443],ip)

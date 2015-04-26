@@ -22,7 +22,7 @@ def is_up(ip):
     else:
         return True
  
-def scan_port_fin(ports,ip):
+def scan_port_fin(ports,ip,logger):
     conf.verb = 0 # Disable verbose in sr(), sr1() methods
     start_time = time.time()
     closed = 0
@@ -31,6 +31,7 @@ def scan_port_fin(ports,ip):
     openp = []
     if is_up(ip):
         print "Host %s is up, start scanning" % ip
+        logger.info("Host %s is up, start scanning" % ip)
         for port in ports:
             src_port = RandShort() # Getting a random port as source port
             p = IP(dst=ip)/TCP(sport=src_port, dport=port, flags='F') # Forging SYN packet
@@ -41,10 +42,12 @@ def scan_port_fin(ports,ip):
                 
                 openp.append(port)
                 print " Port is open " + str(port)
+                logger.info(" Port is open " + str(port))
                 open_close_dict[port] = True
             elif resp.haslayer(TCP):
                 if resp.getlayer(TCP).flags == 0x14:
                     print " Port is closed " + str(port) 
+                    logger.info(" Port is closed " + str(port))
                     closed_list.append(port)
                     open_close_dict[port] = False
                 else:
@@ -56,6 +59,7 @@ def scan_port_fin(ports,ip):
         for port in ports:
             open_close_dict[port] = "HostDown"
         print "Host %s is Down" % ip
+        logger.info("Host %s is Down" % ip)
 
     return open_close_dict
 
